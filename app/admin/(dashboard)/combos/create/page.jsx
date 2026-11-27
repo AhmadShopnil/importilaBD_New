@@ -1,0 +1,724 @@
+"use client"
+
+import { ArrowLeft, UploadCloud, Edit3, Lock, Plus, Trash2, X, Search, Check } from "lucide-react"
+import { BASE_URL } from "@/utils/baseUrl"
+import RichTextEditor from "@/components/RichTextEditor"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import MediaPicker from "@/components/Dashboard/MediaManager/MediaPicker"
+
+import { useCreateComboMutation } from "@/lib/redux/api/comboApi"
+import { useGetProductsQuery } from "@/lib/redux/api/productApi"
+import toast from "react-hot-toast"
+
+export default function CreateComboPage() {
+  const router = useRouter()
+  const { data: productsData } = useGetProductsQuery()
+  const [createCombo, { isLoading: loading }] = useCreateComboMutation()
+
+  const products = productsData || []
+  const [selectedProducts, setSelectedProducts] = useState([])
+  const [selectedVarrient, setSelectedVarrient] = useState({})
+  const [sizes, setSizes] = useState([])
+  const [search, setSearch] = useState("")
+  const [slugEditMode, setSlugEditMode] = useState(false)
+  const [title, setTitle] = useState("")
+  const [slug, setSlug] = useState("")
+  const [imagePreview, setImagePreview] = useState(null)
+  const [landingPageDetails, setLandingPageDetails] = useState("")
+  const [sizeChart, setSizeChart] = useState(null)
+  const [showSizeChartMediaPicker, setShowSizeChartMediaPicker] = useState(false)
+  const [sliderLocation, setSliderLocation] = useState("")
+  const [availableSliders, setAvailableSliders] = useState([])
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/api/sliders`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setAvailableSliders(data)
+      })
+      .catch((err) => console.error("Failed to fetch sliders", err))
+  }, [])
+
+  const [bundleOptions, setBundleOptions] = useState([
+    { pieces: 3, price: 990, originalPrice: 1500, shippingCharge: 60, popular: false },
+    { pieces: 6, price: 1800, originalPrice: 3000, shippingCharge: 0, popular: true },
+    { pieces: 10, price: 2800, originalPrice: 5000, shippingCharge: 0, popular: false }
+  ])
+
+  /* ---------- Slug Logic ---------- */
+  const handleTitleChange = (e) => {
+    const val = e.target.value
+    setTitle(val)
+    if (!slugEditMode) {
+      setSlug(val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))
+    }
+  }
+
+  const handleSlugChange = (e) => {
+    setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))
+  }
+
+  /* ---------- Image Preview ---------- */
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setImagePreview(URL.createObjectURL(file))
+    }
+  }
+
+  /* ---------- Select Product ---------- */
+  const addProduct = (product) => {
+    if (selectedProducts.find(p => (p._id || p.productId) === product._id)) return
+
+    setSelectedProducts(prev => [
+      ...prev,
+      {
+        ...product,
+        selectedVarrient
+      }
+    ])
+  }
+
+  const handleSelectVarrient = (v, index) => {
+    setSelectedVarrient(v)
+    setColor(index, v)
+  }
+
+  /* ---------- Set Color ---------- */
+  const setColor = (index, variant) => {
+    const updated = [...selectedProducts]
+    updated[index].colorName = variant.colorName
+    updated[index].colorHex = variant.colorHex
+    setSelectedProducts(updated)
+  }
+
+  /* ---------- Toggle Size ---------- */
+  const toggleSize = (size) => {
+    setSizes(prev =>
+      prev.includes(size)
+        ? prev.filter(s => s !== size)
+        : [...prev, size]
+    )
+  }
+
+  /* ---------- Bundle Options Handlers ---------- */
+  const addBundleOption = () => {
+    setBundleOptions([...bundleOptions, { pieces: 0, price: 0, originalPrice: 0, shippingCharge: 0, popular: false }])
+  }
+
+  const removeBundleOption = (index) => {
+    setBundleOptions(bundleOptions.filter((_, i) => i !== index))
+  }
+
+  const updateBundleOption = (index, field, value) => {
+    const updated = [...bundleOptions]
+    updated[index][field] = field === "popular" ? value : Number(value)
+    setBundleOptions(updated)
+  }
+
+  /* ---------- Submit ---------- */
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    const formData = new FormData(e.target)
+    formData.append("products", JSON.stringify(selectedProducts))
+    formData.append("sizes", JSON.stringify(sizes))
+    formData.append("bundleOptions", JSON.stringify(bundleOptions))
+    formData.append("slug", slug)
+    formData.append("landingPageDetails", landingPageDetails)
+    if (sizeChart) {
+      formData.append("sizeChart", sizeChart)
+    }
+    if (sliderLocation) {
+      formData.append("sliderLocation", sliderLocation)
+    }
+
+    try {
+      await createCombo(formData).unwrap()
+      toast.success("Combo created successfully!")
+      router.push("/admin/combos")
+    } catch (err) {
+      toast.error(err.data?.error || "Failed to create combo")
+    }
+  }
+
+  /* ---------- Filter Products ---------- */
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <div className=" py-8 space-y-8">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <Link
+            href="/admin/combos"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Combo List
+          </Link>
+          <h1 className="text-3xl font-bold tracking-tight">Create New Combo</h1>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-20">
+
+        {/* LEFT COLUMN: Main Info */}
+        <div className="lg:col-span-8 space-y-8">
+
+          {/* ================= BASIC INFO ================= */}
+          <section className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="flex items-center gap-2 border-b border-border pb-4">
+              <h2 className="text-xl font-bold">Combo Information</h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">Internal Title *</label>
+                <input
+                  name="title"
+                  value={title}
+                  onChange={handleTitleChange}
+                  placeholder="e.g. Kids Summer Collection 2024"
+                  required
+                  className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">Slug *</label>
+                <div className="relative">
+                  <input
+                    name="slug_display"
+                    value={slug}
+                    onChange={handleSlugChange}
+                    readOnly={!slugEditMode}
+                    placeholder="kids-summer-combo"
+                    required
+                    className={`flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${!slugEditMode ? 'bg-muted cursor-not-allowed' : ''}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSlugEditMode(!slugEditMode)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-muted rounded-lg transition-colors"
+                    title={slugEditMode ? "Lock Slug" : "Edit Slug"}
+                  >
+                    {slugEditMode ? <Lock className="w-4 h-4 text-primary" /> : <Edit3 className="w-4 h-4 text-muted-foreground" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">Landing Page Title</label>
+                <input
+                  name="landingPageTitle"
+                  placeholder="e.g. Adorable Kids Dress Sets"
+                  className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">Landing Page Subtitle</label>
+                <input
+                  name="landingPageSubtitle"
+                  placeholder="e.g. Mix, Match & Save Big!"
+                  className="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                />
+              </div>
+
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-sm font-semibold text-foreground flex justify-between items-center">
+                <span>Landing Page Details (Rich Content)</span>
+                <span className="text-[10px] text-primary bg-primary/5 px-2 py-1 rounded">Visual Editor</span>
+              </label>
+              <RichTextEditor
+                value={landingPageDetails}
+                onChange={setLandingPageDetails}
+                placeholder="Write detailed product information, feature lists, etc. with style..."
+              />
+              <p className="text-[11px] text-muted-foreground">This content appears in the "Why Choose Importila" section on the landing page.</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Internal Description</label>
+              <textarea
+                name="description"
+                placeholder="Details about this combo for admin reference..."
+                className="flex min-h-[100px] w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              />
+            </div>
+          </section>
+
+          {/* ================= LANDING PAGE CUSTOMIZATION ================= */}
+          <section className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="flex items-center gap-2 border-b border-border pb-4">
+              <h2 className="text-xl font-bold">Landing Page Content & CTA</h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Hero Section */}
+              <div className="space-y-4 col-span-2">
+                <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Hero Section</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Hero Badge text</label>
+                    <input name="heroBadge" placeholder="e.g. Bundle & Save Up To 41%" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Hero CTA Button</label>
+                    <input name="heroCTA" placeholder="e.g. পছন্দের বান্ডেলটি বেছে নিন" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Bundle & Products Section */}
+              <div className="space-y-4 col-span-2 pt-4 border-t border-border">
+                <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Bundle & Products Section</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Bundle Section Title</label>
+                    <input name="bundleTitle" placeholder="e.g. পছন্দের বান্ডেলটি বেছে নিন" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Bundle Section Subtitle</label>
+                    <input name="bundleSubtitle" placeholder="e.g. Select pieces and save!" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Product Grid Title</label>
+                    <input name="productGridTitle" placeholder="e.g. Choose Your Favorite Styles" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Size Selection Title</label>
+                    <input name="sizeSelectionTitle" placeholder="e.g. Select Size for Your Bundle" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Checkout Section */}
+              <div className="space-y-4 col-span-2 pt-4 border-t border-border">
+                <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Checkout Section</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Checkout Form Title</label>
+                    <input name="checkoutFormTitle" placeholder="e.g. Complete Your Order" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Checkout Form Subtitle</label>
+                    <input name="checkoutFormSubtitle" placeholder="e.g. Fill in your details..." className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Checkout Button Text</label>
+                    <input name="checkoutCTA" placeholder="e.g. Place Order" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Help & Social Section */}
+              <div className="space-y-4 col-span-2 pt-4 border-t border-border">
+                <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Contact & Support</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">WhatsApp Number</label>
+                    <input name="whatsappNumber" placeholder="e.g. +8801631314880" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Messenger Username</label>
+                    <input name="messengerUsername" placeholder="e.g. importila" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Help Title</label>
+                    <input name="helpTitle" placeholder="e.g. Need Help? Chat With Us!" className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold">Help Subtitle</label>
+                    <input name="helpSubtitle" placeholder="e.g. Our team is ready to assist..." className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ================= BUNDLE OPTIONS ================= */}
+          <section className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="flex justify-between items-center border-b border-border pb-4">
+              <h2 className="text-xl font-bold">Bundle Options (Packs)</h2>
+              <button
+                type="button"
+                onClick={addBundleOption}
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition-all"
+              >
+                <Plus className="w-4 h-4" /> Add Pack Option
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {bundleOptions.map((opt, idx) => (
+                <div key={idx} className="bg-muted/30 border border-border rounded-2xl p-4 space-y-4 relative group transition-all hover:bg-muted/50">
+                  <button
+                    type="button"
+                    onClick={() => removeBundleOption(idx)}
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Pieces</label>
+                      <input
+                        type="number"
+                        value={opt.pieces}
+                        onChange={(e) => updateBundleOption(idx, "pieces", e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Price</label>
+                      <input
+                        type="number"
+                        value={opt.price}
+                        onChange={(e) => updateBundleOption(idx, "price", e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Original</label>
+                      <input
+                        type="number"
+                        value={opt.originalPrice}
+                        onChange={(e) => updateBundleOption(idx, "originalPrice", e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Shipping</label>
+                      <input
+                        type="number"
+                        value={opt.shippingCharge}
+                        onChange={(e) => updateBundleOption(idx, "shippingCharge", e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2">
+                    <input
+                      type="checkbox"
+                      checked={opt.popular}
+                      onChange={(e) => updateBundleOption(idx, "popular", e.target.checked)}
+                      id={`popular-${idx}`}
+                      className="w-4 h-4 rounded border-border text-primary focus:ring-primary transition-all cursor-pointer"
+                    />
+                    <label htmlFor={`popular-${idx}`} className="text-sm font-medium cursor-pointer">Mark as Most Popular</label>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ================= PRODUCT PICKER ================= */}
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* PRODUCT LIST */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4 flex flex-col h-[600px]">
+              <div className="flex items-center justify-between border-b border-border pb-4">
+                <h2 className="text-xl font-bold font-sans flex items-center gap-2">
+                  Select Products
+                </h2>
+                <span className="text-xs font-semibold bg-muted px-2 py-1 rounded-full">{filteredProducts.length} Available</span>
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-muted/50 border border-border rounded-xl text-sm focus:bg-background transition-all outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
+                {filteredProducts?.map(product => {
+                  const isSelected = selectedProducts.some(p => (p._id || p.productId) === product._id);
+                  return (
+                    <button
+                      type="button"
+                      key={product._id}
+                      onClick={() => !isSelected && addProduct(product)}
+                      disabled={isSelected}
+                      className={`w-full group flex items-center justify-between p-3 rounded-xl border transition-all text-left ${isSelected
+                        ? "bg-primary/10 border-primary shadow-sm cursor-not-allowed"
+                        : "border-transparent hover:border-primary/20 hover:bg-primary/5 cursor-pointer"
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden border border-border flex-shrink-0">
+                          <img src={product.featuredImage} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium line-clamp-1">{product?.name}</span>
+                          {isSelected && (
+                            <span className="text-[10px] font-bold text-primary uppercase">Already Selected</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isSelected ? "bg-primary text-white" : "bg-muted group-hover:bg-primary group-hover:text-white"
+                        }`}>
+                        {isSelected ? <Check size={16} /> : <Plus size={16} />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SELECTED PRODUCTS */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4 flex flex-col h-[600px]">
+              <div className="flex items-center justify-between border-b border-border pb-4">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  Selected Items
+                </h2>
+                <span className="text-xs font-semibold bg-primary/10 text-primary px-2 py-1 rounded-full">{selectedProducts.length} Added</span>
+              </div>
+
+              <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+                {selectedProducts?.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center space-y-3 opacity-50">
+                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                      <Trash2 size={24} />
+                    </div>
+                    <p className="text-sm font-medium">No products selected</p>
+                  </div>
+                ) : (
+                  selectedProducts.map((p, index) => (
+                    <div key={p.productId} className="bg-muted/10 border border-border rounded-2xl p-4 relative group animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProducts(prev => prev.filter(item => item?._id !== p?._id))}
+                        className="absolute -top-2 -right-2 w-7 h-7 bg-card border border-border rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive/30 shadow-sm transition-all z-10"
+                      >
+                        <X size={14} />
+                      </button>
+
+                      <div className="flex gap-4 items-center">
+                        <div className="w-14 h-14 rounded-md overflow-hidden border border-border flex-shrink-0">
+                          <img src={p.featuredImage} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="space-y-2 flex-1">
+                          <h4 className="text-sm font-bold line-clamp-1 pr-6">{p.name}</h4>
+                          {/* <div className="flex gap-2 flex-wrap">
+                            {p?.variants?.map(v => (
+                              <button
+                                type="button"
+                                key={v.sku}
+                                onClick={() => handleSelectVarrient(v, index)}
+                                className={`w-7 h-7 rounded-lg border-2 transition-all hover:scale-110 ${p.colorName === v.colorName ? 'ring-2 ring-primary ring-offset-2 border-transparent' : 'border-border'}`}
+                                style={{ backgroundColor: v.colorHex }}
+                                title={v.colorName}
+                              />
+                            ))}
+                          </div> */}
+                          {/* {p.colorName && (
+                            <p className="text-[11px] font-bold text-primary bg-primary/5 px-2 py-0.5 rounded w-fit">
+                              COLOR: {p.colorName}
+                            </p>
+                          )} */}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* RIGHT COLUMN: Settings & Actions */}
+        <div className="lg:col-span-4 space-y-8">
+
+          {/* ================= FEATURED IMAGE ================= */}
+          <section className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
+            <h2 className="text-lg font-bold">Featured Image</h2>
+            <div className="relative">
+              <div className={`border-2 border-dashed rounded-2xl p-4 transition-all flex flex-col items-center justify-center gap-3 group relative overflow-hidden ${imagePreview ? 'border-primary/30' : 'border-border hover:border-primary/50 bg-muted/20'}`}>
+                {imagePreview ? (
+                  <div className="relative w-full aspect-square rounded-xl overflow-hidden group">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setImagePreview(null)}
+                      className="absolute top-2 right-2 p-2 bg-background/80 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all text-destructive"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary transition-transform group-hover:scale-110">
+                      <UploadCloud size={32} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-bold text-foreground">Click to upload image</p>
+                      <p className="text-xs text-muted-foreground mt-1">SVG, PNG, JPG (max. 5MB)</p>
+                    </div>
+                  </>
+                )}
+                <input
+                  type="file"
+                  name="featuredImage"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  required={!imagePreview}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* ================= SIZES ================= */}
+          <section className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
+            <h2 className="text-lg font-bold">Available Sizes</h2>
+            <div className="grid grid-cols-2 gap-2">
+              {["1-2", "2-3", "3-4", "4-5", "5-6", "6-7", "7-8", "8-9", "9-10", "10-11", "11-12", "12-13"].map(size => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => toggleSize(size)}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${sizes.includes(size) ? 'bg-primary/10 border-primary text-primary' : 'bg-background border-border hover:bg-muted'}`}
+                >
+                  {size}
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${sizes.includes(size) ? 'bg-primary border-transparent' : 'border-border'}`}>
+                    {sizes.includes(size) && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* ================= HERO SLIDER ================= */}
+          <section className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-3">
+            <div className="space-y-1">
+              <h2 className="text-lg font-bold">Hero Slider (Optional)</h2>
+              <p className="text-xs text-muted-foreground">
+                Select an existing slider to display in the combo page hero section.
+              </p>
+            </div>
+            <select
+              value={sliderLocation}
+              onChange={(e) => setSliderLocation(e.target.value)}
+              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">-- No Slider (Hidden) --</option>
+              {availableSliders.map((s) => (
+                <option key={s._id} value={s.location}>
+                  {s.name} ({s.location})
+                </option>
+              ))}
+            </select>
+          </section>
+
+          {/* ================= SIZE CHART ================= */}
+          <section className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold">Size Chart (Optional)</h2>
+              <span className="text-xs text-muted-foreground">Measurement guide</span>
+            </div>
+
+            {sizeChart ? (
+              <div className="relative border border-border rounded-xl overflow-hidden group h-48 bg-muted/20 flex items-center justify-center">
+                <img
+                  src={typeof sizeChart === "string" ? sizeChart : URL.createObjectURL(sizeChart)}
+                  alt="Size Chart"
+                  className="max-h-full max-w-full object-contain"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowSizeChartMediaPicker(true)}
+                    className="bg-white text-gray-900 px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:scale-105 transition-transform"
+                  >
+                    Change
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSizeChart(null)}
+                    className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:bg-red-700 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-border rounded-xl p-5 text-center space-y-3 bg-muted/10">
+                <p className="text-xs text-muted-foreground">
+                  Upload size chart image or select from library. If not added, no size chart will appear on the combo page.
+                </p>
+                <div className="flex items-center justify-center gap-2">
+                  <label className="bg-[#1E556E] text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 cursor-pointer transition-all">
+                    Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0]
+                        if (file) setSizeChart(file)
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowSizeChartMediaPicker(true)}
+                    className="bg-white border border-[#1E556E] text-[#1E556E] px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-all"
+                  >
+                    From Library
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* ================= SUBMIT ================= */}
+          <div className="sticky top-8 space-y-4">
+            <button
+              disabled={loading}
+              className="w-full bg-[#1E556E] text-white py-3 rounded-xl text-lg font-bold shadow-lg shadow-primary/10
+               hover:shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 
+               disabled:scale-100 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Creating Combo...
+                </>
+              ) : (
+                "Publish Combo"
+              )}
+            </button>
+            <p className="text-xs text-center text-muted-foreground">
+              Make sure all information is correct before publishing.
+            </p>
+          </div>
+
+        </div>
+      </form>
+
+      {showSizeChartMediaPicker && (
+        <MediaPicker
+          isOpen={showSizeChartMediaPicker}
+          onClose={() => setShowSizeChartMediaPicker(false)}
+          onSelect={(media) => {
+            setSizeChart(media.url)
+            setShowSizeChartMediaPicker(false)
+          }}
+        />
+      )}
+    </div>
+  )
+}

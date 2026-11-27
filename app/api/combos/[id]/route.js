@@ -1,0 +1,211 @@
+import { connectToDatabase } from "@/lib/mongodb"
+import { NextResponse } from "next/server"
+import { uploadToCloudinary } from "@/lib/cloudinary"
+import { ObjectId } from "mongodb"
+import { getAdminAuth } from "@/lib/auth"
+
+/* ================= GET ================= */
+export async function GET(request, context) {
+  try {
+    const { id } = await context.params
+    const { db } = await connectToDatabase()
+
+    const query = ObjectId.isValid(id)
+      ? { _id: new ObjectId(id) }
+      : { slug: id }
+
+    const combo = await db.collection("combos").findOne(query)
+
+    if (!combo) {
+      return NextResponse.json({ error: "Combo not found" }, { status: 404 })
+    }
+    
+    if (Array.isArray(combo.products) && combo.products.length > 0) {
+      const toIdStr = (p) => {
+        if (!p) return null;
+        if (p instanceof ObjectId || p._bsontype === 'ObjectID') return p.toString();
+        if (typeof p === 'object') {
+          const val = p._id || p.id;
+          return val ? val.toString() : p.toString();
+        }
+        return String(p);
+      };
+
+      const idStrings = combo.products.map(toIdStr).filter(id => id && ObjectId.isValid(id));
+      const objectIds = idStrings.map(id => new ObjectId(id));
+      
+      let populatedProductsHash = {};
+      if (objectIds.length > 0) {
+        const populatedProducts = await db.collection("products").find({ _id: { $in: objectIds } }).toArray();
+        populatedProducts.forEach(p => {
+          populatedProductsHash[String(p._id)] = p;
+        });
+      }
+      
+      combo.products = idStrings.map(id => populatedProductsHash[id] || null).filter(Boolean);
+    }
+    
+    return NextResponse.json(combo)
+  } catch (error) {
+    console.error("GET /api/combos/[id] error:", error)
+    return NextResponse.json({ error: "Failed to fetch combo" }, { status: 500 })
+  }
+}
+
+/* ================= PUT ================= */
+export async function PUT(request, context) {
+  const admin = await getAdminAuth()
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  try {
+    const { id } = await context.params
+    const formData = await request.formData()
+
+    const title = formData.get("title")
+    const slug = formData.get("slug")
+    const landingPageTitle = formData.get("landingPageTitle")
+    const landingPageSubtitle = formData.get("landingPageSubtitle")
+    const landingPageDetails = formData.get("landingPageDetails")
+
+    const heroBadge = formData.get("heroBadge");
+    const heroCTA = formData.get("heroCTA");
+    const bundleTitle = formData.get("bundleTitle");
+    const bundleSubtitle = formData.get("bundleSubtitle");
+    const productGridTitle = formData.get("productGridTitle");
+    const sizeSelectionTitle = formData.get("sizeSelectionTitle");
+    const checkoutFormTitle = formData.get("checkoutFormTitle");
+    const checkoutFormSubtitle = formData.get("checkoutFormSubtitle");
+    const checkoutCTA = formData.get("checkoutCTA");
+    const whatsappNumber = formData.get("whatsappNumber");
+    const messengerUsername = formData.get("messengerUsername");
+    const helpTitle = formData.get("helpTitle");
+    const helpSubtitle = formData.get("helpSubtitle");
+
+    const description = formData.get("description")
+    const price = Number(formData.get("price")) || 0
+    const offerPrice = Number(formData.get("offerPrice")) || 0
+    const sizes = JSON.parse(formData.get("sizes") || "[]")
+    const productsRaw = JSON.parse(formData.get("products") || "[]")
+    const products = productsRaw.map(p => {
+      if (typeof p === 'object' && p !== null) return p._id || p.id;
+      return p;
+    }).filter(Boolean);
+    const bundleOptions = JSON.parse(formData.get("bundleOptions") || "[]")
+    const sliderLocation = formData.get("sliderLocation") || null
+
+    const featuredImageFile = formData.get("featuredImage")
+    let featuredImage = formData.get("existingFeaturedImage") || null
+
+    // Handle Size Chart
+    const sizeChartFile = formData.get("sizeChart")
+    let sizeChart = formData.get("existingSizeChart") || null
+
+    const { db } = await connectToDatabase()
+
+    if (sizeChartFile instanceof File && sizeChartFile.size > 0) {
+      const sizeChartResult = await uploadToCloudinary(sizeChartFile, "combos")
+      await db.collection("media").insertOne({
+        url: sizeChartResult.secure_url,
+        publicId: sizeChartResult.public_id,
+        folder: "combos",
+        fileName: sizeChartFile.name,
+        fileSize: sizeChartFile.size,
+        format: sizeChartResult.format,
+        width: sizeChartResult.width,
+        height: sizeChartResult.height,
+        createdAt: new Date(),
+      })
+      sizeChart = sizeChartResult.secure_url
+    } else if (typeof sizeChartFile === 'string') {
+      sizeChart = sizeChartFile.trim() || null
+    }
+
+    if (featuredImageFile && featuredImageFile.size > 0) {
+      const imageResult = await uploadToCloudinary(featuredImageFile, "combos")
+
+      // Save to media collection
+      await db.collection("media").insertOne({
+        url: imageResult.secure_url,
+        publicId: imageResult.public_id,
+        folder: "combos",
+        fileName: featuredImageFile.name,
+        fileSize: featuredImageFile.size,
+        format: imageResult.format,
+        width: imageResult.width,
+        height: imageResult.height,
+        createdAt: new Date(),
+      })
+
+      featuredImage = imageResult.secure_url
+    }
+
+    const result = await db.collection("combos").updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          title,
+          slug,
+          landingPageTitle,
+          landingPageSubtitle,
+          landingPageDetails,
+          heroBadge,
+          heroCTA,
+          bundleTitle,
+          bundleSubtitle,
+          productGridTitle,
+          sizeSelectionTitle,
+          checkoutFormTitle,
+          checkoutFormSubtitle,
+          checkoutCTA,
+          whatsappNumber,
+          messengerUsername,
+          helpTitle,
+          helpSubtitle,
+          description,
+          price,
+          offerPrice,
+          sizes,
+          products,
+          bundleOptions,
+          featuredImage,
+          sizeChart,
+          sliderLocation,
+          updatedAt: new Date(),
+        },
+      }
+    )
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: "Combo not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("PUT /api/combos/[id] error:", error)
+    return NextResponse.json({ error: "Failed to update combo" }, { status: 500 })
+  }
+}
+
+/* ================= DELETE ================= */
+export async function DELETE(request, context) {
+  const admin = await getAdminAuth()
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  try {
+    const { id } = await context.params
+    const { db } = await connectToDatabase()
+
+    const result = await db.collection("combos").deleteOne({
+      _id: new ObjectId(id),
+    })
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: "Combo not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ message: "Combo deleted successfully" })
+  } catch (error) {
+    console.error("DELETE /api/combos/[id] error:", error)
+    return NextResponse.json({ error: "Failed to delete combo" }, { status: 500 })
+  }
+}
