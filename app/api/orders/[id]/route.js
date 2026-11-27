@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { clearCache } from "@/lib/cache"
 
 export async function GET(request, context) {
   const admin = await getAdminAuth()
@@ -56,6 +57,9 @@ export async function PUT(request, context) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
 
+    clearCache("orders_")
+    clearCache("admin_stats_")
+
     return NextResponse.json({ message: "Order updated successfully" })
   } catch (error) {
     console.error("PUT /api/orders/[id] error:", error)
@@ -77,6 +81,9 @@ export async function DELETE(request, context) {
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 })
     }
+
+    clearCache("orders_")
+    clearCache("admin_stats_")
 
     return NextResponse.json({ message: "Order deleted successfully" })
   } catch (error) {

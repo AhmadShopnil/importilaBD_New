@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached, clearCache } from "@/lib/cache"
 
 export async function GET(request) {
   const admin = await getAdminAuth()
@@ -44,7 +45,13 @@ export async function GET(request) {
       ]
     }
 
-    const [orders, totalCount, stats, statusBreakdown, storeBreakdown] = await Promise.all([
+    const statusCacheKey = `orders_status_breakdown_${type}`
+    let cachedStatusBreakdown = getCached(statusCacheKey)
+
+    const storeCacheKey = "orders_store_breakdown"
+    let cachedStoreBreakdown = getCached(storeCacheKey)
+
+    const promises = [
       db.collection("orders")
         .find(query)
         .sort({ createdAt: -1 })
@@ -89,42 +96,70 @@ export async function GET(request) {
             }
           }
         }
-      ]).toArray(),
-      db.collection("orders").aggregate([
-        { $match: query.productType !== undefined ? { productType: query.productType } : {} },
-        {
-          $group: {
-            _id: { $toLower: { $ifNull: ["$status", "pending"] } },
-            count: { $sum: 1 },
-            revenue: {
-              $sum: {
-                $ifNull: ["$totalAmount", { $ifNull: ["$totalPrice", { $ifNull: ["$offerPrice", { $ifNull: ["$price", 0] }] }] }]
-              }
-            }
-          }
-        }
-      ]).toArray(),
-      db.collection("orders").aggregate([
-        {
-          $group: {
-            _id: { $cond: [{ $eq: ["$productType", "combo"] }, "combo", "regular"] },
-            count: { $sum: 1 },
-            deliveredRevenue: {
-              $sum: {
-                $cond: [
-                  deliveredStatusMatch,
-                  { $ifNull: ["$totalAmount", { $ifNull: ["$totalPrice", { $ifNull: ["$offerPrice", { $ifNull: ["$price", 0] }] }] }] },
-                  0
-                ]
-              }
-            },
-            deliveredCount: {
-              $sum: { $cond: [deliveredStatusMatch, 1, 0] }
-            }
-          }
-        }
       ]).toArray()
-    ])
+    ]
+
+    if (!cachedStatusBreakdown) {
+      promises.push(
+        db.collection("orders").aggregate([
+          { $match: query.productType !== undefined ? { productType: query.productType } : {} },
+          {
+            $group: {
+              _id: { $toLower: { $ifNull: ["$status", "pending"] } },
+              count: { $sum: 1 },
+              revenue: {
+                $sum: {
+                  $ifNull: ["$totalAmount", { $ifNull: ["$totalPrice", { $ifNull: ["$offerPrice", { $ifNull: ["$price", 0] }] }] }]
+                }
+              }
+            }
+          }
+        ]).toArray()
+      )
+    }
+
+    if (!cachedStoreBreakdown) {
+      promises.push(
+        db.collection("orders").aggregate([
+          {
+            $group: {
+              _id: { $cond: [{ $eq: ["$productType", "combo"] }, "combo", "regular"] },
+              count: { $sum: 1 },
+              deliveredRevenue: {
+                $sum: {
+                  $cond: [
+                    deliveredStatusMatch,
+                    { $ifNull: ["$totalAmount", { $ifNull: ["$totalPrice", { $ifNull: ["$offerPrice", { $ifNull: ["$price", 0] }] }] }] },
+                    0
+                  ]
+                }
+              },
+              deliveredCount: {
+                $sum: { $cond: [deliveredStatusMatch, 1, 0] }
+              }
+            }
+          }
+        ]).toArray()
+      )
+    }
+
+    const results = await Promise.all(promises)
+    const orders = results[0]
+    const totalCount = results[1]
+    const stats = results[2]
+
+    let statusBreakdown = cachedStatusBreakdown
+    let storeBreakdown = cachedStoreBreakdown
+
+    let nextIdx = 3
+    if (!statusBreakdown) {
+      statusBreakdown = results[nextIdx++]
+      setCached(statusCacheKey, statusBreakdown, 30)
+    }
+    if (!storeBreakdown) {
+      storeBreakdown = results[nextIdx++]
+      setCached(storeCacheKey, storeBreakdown, 45)
+    }
 
     const totalPages = Math.ceil(totalCount / limit)
     const baseSummary = stats[0] || { totalRevenue: 0, deliveredRevenue: 0, deliveredCount: 0, totalItems: 0 }
@@ -378,6 +413,8 @@ export async function POST(request) {
     }
 
     const result = await db.collection("orders").insertOne(orderData)
+    clearCache("orders_")
+    clearCache("admin_stats_")
 
     // Update daily sales with verified figures
     const today = new Date().toISOString().split("T")[0]
@@ -414,6 +451,8 @@ export async function DELETE(request) {
     const result = await db.collection("orders").deleteMany({
       _id: { $in: ids.map(id => new ObjectId(id)) }
     })
+    clearCache("orders_")
+    clearCache("admin_stats_")
 
     return NextResponse.json({
       message: `${result.deletedCount} orders deleted successfully`,

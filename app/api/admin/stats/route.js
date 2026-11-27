@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached } from "@/lib/cache"
 
 export async function GET(request) {
     const admin = await getAdminAuth()
@@ -13,6 +14,17 @@ export async function GET(request) {
         const filter = searchParams.get("filter") || "all"
         const month = parseInt(searchParams.get("month"))
         const year = parseInt(searchParams.get("year"))
+
+        const cacheKey = `admin_stats_${filter}_${month || 0}_${year || 0}`
+        const cached = getCached(cacheKey)
+        if (cached) {
+            return NextResponse.json(cached, {
+                headers: {
+                    "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+                    "X-Cache": "HIT"
+                }
+            })
+        }
 
         const { db } = await connectToDatabase()
 
@@ -312,7 +324,7 @@ export async function GET(request) {
                 : (src.count > 0 ? Math.round(src.grossSales / src.count) : 0)
         }))
 
-        return NextResponse.json({
+        const responseData = {
             // Core Counts
             totalProducts,
             totalOrders,
@@ -346,6 +358,15 @@ export async function GET(request) {
             statusDistribution: stats[0]?.statusDistribution || [],
             sourceDistribution,
             topProducts
+        }
+
+        setCached(cacheKey, responseData, 30)
+
+        return NextResponse.json(responseData, {
+            headers: {
+                "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+                "X-Cache": "MISS"
+            }
         })
     } catch (error) {
         console.error("GET /api/admin/stats error:", error)

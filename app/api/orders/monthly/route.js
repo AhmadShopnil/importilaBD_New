@@ -1,17 +1,29 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached } from "@/lib/cache"
 
 export async function GET(request) {
   const admin = await getAdminAuth()
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   try {
-    const { db } = await connectToDatabase()
-
     const { searchParams } = new URL(request.url)
     const month = parseInt(searchParams.get("month")) || new Date().getMonth() + 1
     const year = parseInt(searchParams.get("year")) || new Date().getFullYear()
+
+    const cacheKey = `orders_monthly_${year}_${month}`
+    const cached = getCached(cacheKey)
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+          "X-Cache": "HIT"
+        }
+      })
+    }
+
+    const { db } = await connectToDatabase()
 
     const startOfMonth = new Date(year, month - 1, 1)
     const endOfMonth = new Date(year, month, 1)
@@ -81,7 +93,16 @@ export async function GET(request) {
       }
     })
 
-    return NextResponse.json(result)
+    // If viewing a past month/year, cache for 1 hour; current month cache for 60s
+    const isCurrentMonth = year === new Date().getFullYear() && month === (new Date().getMonth() + 1)
+    setCached(cacheKey, result, isCurrentMonth ? 60 : 3600)
+
+    return NextResponse.json(result, {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+        "X-Cache": "MISS"
+      }
+    })
   } catch (error) {
     console.error(error)
     return NextResponse.json(

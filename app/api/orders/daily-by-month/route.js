@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached } from "@/lib/cache"
 
 export async function GET(request) {
   const admin = await getAdminAuth()
@@ -11,6 +12,17 @@ export async function GET(request) {
     const month = searchParams.get("month") ? Number(searchParams.get("month")) : null
     const year = Number(searchParams.get("year")) || new Date().getFullYear()
     const view = searchParams.get("view") // "yearly" | "daily"
+
+    const cacheKey = `daily_by_month_${view || "yearly"}_${year}_${month || 0}`
+    const cached = getCached(cacheKey)
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+          "X-Cache": "HIT"
+        }
+      })
+    }
 
     const { db } = await connectToDatabase()
 
@@ -79,7 +91,15 @@ export async function GET(request) {
         }
       })
 
-      return NextResponse.json(yearlyData)
+      const isCurrentYear = year === new Date().getFullYear()
+      setCached(cacheKey, yearlyData, isCurrentYear ? 60 : 3600)
+
+      return NextResponse.json(yearlyData, {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+          "X-Cache": "MISS"
+        }
+      })
     }
 
     // 2. Daily mode for a specific month
@@ -150,7 +170,15 @@ export async function GET(request) {
       }
     })
 
-    return NextResponse.json(data)
+    const isCurrentYearAndMonth = year === new Date().getFullYear() && month === (new Date().getMonth() + 1)
+    setCached(cacheKey, data, isCurrentYearAndMonth ? 60 : 3600)
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+        "X-Cache": "MISS"
+      }
+    })
   } catch (error) {
     console.error("GET /api/orders/daily-by-month error:", error)
     return NextResponse.json(

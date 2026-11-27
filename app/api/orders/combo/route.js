@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
 import { generateSKU } from "@/lib/sku"
+import { getCached, setCached, clearCache } from "@/lib/cache"
 
 export async function GET(request) {
   const admin = await getAdminAuth()
@@ -38,7 +39,10 @@ export async function GET(request) {
       ]
     }
 
-    const [orders, totalCount, stats, statusBreakdown] = await Promise.all([
+    const statusCacheKey = "orders_status_breakdown_combo"
+    let cachedStatusBreakdown = getCached(statusCacheKey)
+
+    const promises = [
       db.collection("orders")
         .find(query)
         .sort({ createdAt: -1 })
@@ -83,22 +87,38 @@ export async function GET(request) {
             }
           }
         }
-      ]).toArray(),
-      db.collection("orders").aggregate([
-        { $match: { productType: "combo" } },
-        {
-          $group: {
-            _id: { $toLower: { $ifNull: ["$status", "pending"] } },
-            count: { $sum: 1 },
-            revenue: {
-              $sum: {
-                $ifNull: ["$totalAmount", { $ifNull: ["$totalPrice", { $ifNull: ["$offerPrice", { $ifNull: ["$price", 0] }] }] }]
+      ]).toArray()
+    ]
+
+    if (!cachedStatusBreakdown) {
+      promises.push(
+        db.collection("orders").aggregate([
+          { $match: { productType: "combo" } },
+          {
+            $group: {
+              _id: { $toLower: { $ifNull: ["$status", "pending"] } },
+              count: { $sum: 1 },
+              revenue: {
+                $sum: {
+                  $ifNull: ["$totalAmount", { $ifNull: ["$totalPrice", { $ifNull: ["$offerPrice", { $ifNull: ["$price", 0] }] }] }]
+                }
               }
             }
           }
-        }
-      ]).toArray()
-    ])
+        ]).toArray()
+      )
+    }
+
+    const results = await Promise.all(promises)
+    const orders = results[0]
+    const totalCount = results[1]
+    const stats = results[2]
+
+    let statusBreakdown = cachedStatusBreakdown
+    if (!statusBreakdown) {
+      statusBreakdown = results[3]
+      setCached(statusCacheKey, statusBreakdown, 30)
+    }
 
     const totalPages = Math.ceil(totalCount / limit)
     const summary = stats[0] || { totalRevenue: 0, deliveredRevenue: 0, deliveredCount: 0, totalItems: 0 }
@@ -312,6 +332,8 @@ export async function POST(request) {
     }
 
     const result = await db.collection("orders").insertOne(orderFinalData)
+    clearCache("orders_")
+    clearCache("admin_stats_")
 
     // Update daily sales
     const today = new Date().toISOString().split("T")[0]

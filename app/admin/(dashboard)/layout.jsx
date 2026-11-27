@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { getAdminAuth } from "@/lib/auth"
 import { connectToDatabase } from "@/lib/mongodb"
 import AdminSidebarClientResposive from "@/components/Dashboard/AdminSidebarClientResposive"
+import { getCached, setCached } from "@/lib/cache"
 
 export const dynamic = "force-dynamic"
 
@@ -12,15 +13,18 @@ export default async function AdminLayout({ children }) {
     redirect("/admin/login")
   }
 
-  let settings = null
-  try {
-    const { db } = await connectToDatabase()
-    const rawSettings = await db.collection("settings").findOne({ type: "general" })
-    if (rawSettings) {
-      settings = JSON.parse(JSON.stringify(rawSettings))
+  let settings = getCached("admin_general_settings")
+  if (!settings) {
+    try {
+      const { db } = await connectToDatabase()
+      const rawSettings = await db.collection("settings").findOne({ type: "general" })
+      if (rawSettings) {
+        settings = JSON.parse(JSON.stringify(rawSettings))
+        setCached("admin_general_settings", settings, 300) // 5 minutes TTL
+      }
+    } catch (err) {
+      console.error("Failed to load admin settings:", err)
     }
-  } catch (err) {
-    console.error("Failed to load admin settings:", err)
   }
 
   return (
