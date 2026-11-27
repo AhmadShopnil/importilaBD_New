@@ -1,5 +1,4 @@
 
-import { Analytics } from "@vercel/analytics/next"
 import { ProductSelectionProvider } from "@/context/ProductSelectionContext"
 import Menubar from "@/components/Header/Menubar"
 import BottomAppBar from "@/components/Footer/BottomAppBar"
@@ -55,7 +54,6 @@ export default async function RootLayout({ children }) {
           {children}
           <BottomAppBar />
           <Footer menus={menus} settings={settings} />
-          <Analytics />
           <CartDrawer />
         </ProductSelectionProvider>
       </CartProvider>
