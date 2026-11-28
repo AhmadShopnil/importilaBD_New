@@ -381,13 +381,13 @@ export default function MenuManagementPage() {
           <h1 className="text-xl font-bold text-gray-900">
             Menus & Navigation
           </h1>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 mt-0.5">
             Create and organize multiple distinct menus (Header, Footer, Custom) and configure links for each.
           </p>
         </div>
         <button
           onClick={handleOpenCreateMenu}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-sm font-semibold shadow-xs transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Create New Menu</span>
@@ -399,7 +399,7 @@ export default function MenuManagementPage() {
         {/* Left Column: Menu Selector / Switcher (4 cols) */}
         <div className="lg:col-span-4 space-y-3">
           <div className="bg-white rounded-md border border-gray-200 p-3">
-            <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide block mb-2 px-1">
+            <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide block mb-2 px-1">
               Your Menus ({menus.length})
             </span>
             <div className="space-y-1.5">
@@ -419,19 +419,19 @@ export default function MenuManagementPage() {
                   >
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-gray-900">
+                        <span className="text-base font-bold text-gray-900">
                           {m.title}
                         </span>
-                        <span className="px-1.5 py-0.2 bg-gray-100 text-gray-600 text-[10px] font-semibold rounded uppercase">
+                        <span className="px-1.5 py-0.2 bg-gray-100 text-gray-600 text-sm font-semibold rounded uppercase">
                           {m.location}
                         </span>
                       </div>
-                      <p className="text-[11px] text-gray-500 font-mono">
+                      <p className="text-sm text-gray-500 font-mono">
                         slug: {m.slug}
                       </p>
                     </div>
 
-                    <span className="text-xs font-semibold text-[#1C546D] bg-white px-2 py-0.5 rounded border border-gray-200">
+                    <span className="text-sm font-semibold text-[#1C546D] bg-white px-2 py-0.5 rounded border border-gray-200">
                       {itemsCount} {itemsCount === 1 ? "link" : "links"}
                     </span>
                   </button>
@@ -443,15 +443,15 @@ export default function MenuManagementPage() {
           {/* Quick Add Categories Panel */}
           <div className="bg-white rounded-md border border-gray-200 p-3 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-1.5">
                 <FolderTree className="w-3.5 h-3.5 text-[#1C546D]" /> Add Categories
               </span>
-              <span className="text-[11px] text-gray-400">
+              <span className="text-sm text-gray-400">
                 {flatCategories.length} items
               </span>
             </div>
 
-            <p className="text-[11px] text-gray-500">
+            <p className="text-sm text-gray-500">
               Select categories to add to{" "}
               <span className="font-semibold text-gray-800">
                 {selectedMenu ? `"${selectedMenu.title}"` : "menu"}
@@ -461,14 +461,14 @@ export default function MenuManagementPage() {
             {/* Checkboxes List */}
             <div className="space-y-1 max-h-52 overflow-y-auto border border-gray-100 rounded-md p-2 bg-gray-50/50 divide-y divide-gray-100">
               {flatCategories.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-3">No categories found</p>
+                <p className="text-sm text-gray-400 text-center py-3">No categories found</p>
               ) : (
                 flatCategories.map((cat) => {
                   const isChecked = selectedCatCheckboxes.includes(cat._id);
                   return (
                     <label
                       key={cat._id}
-                      className="flex items-center gap-2 py-1.5 px-1 rounded hover:bg-white text-xs text-gray-700 cursor-pointer select-none transition-colors"
+                      className="flex items-center gap-2 py-1.5 px-1 rounded hover:bg-white text-sm text-gray-700 cursor-pointer select-none transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -497,7 +497,7 @@ export default function MenuManagementPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCatCheckboxes(flatCategories.map((c) => c._id))}
-                  className="text-[11px] text-gray-500 hover:text-gray-900 cursor-pointer font-medium"
+                  className="text-sm text-gray-500 hover:text-gray-900 cursor-pointer font-medium"
                 >
                   Select All
                 </button>
@@ -505,7 +505,7 @@ export default function MenuManagementPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCatCheckboxes([])}
-                  className="text-[11px] text-gray-500 hover:text-gray-900 cursor-pointer font-medium"
+                  className="text-sm text-gray-500 hover:text-gray-900 cursor-pointer font-medium"
                 >
                   Deselect
                 </button>
@@ -515,7 +515,7 @@ export default function MenuManagementPage() {
                 type="button"
                 disabled={selectedCatCheckboxes.length === 0 || !selectedMenu || saving}
                 onClick={() => handleAddCategoriesToMenu(selectedCatCheckboxes)}
-                className="px-2.5 py-1.5 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-xs"
+                className="px-2.5 py-1.5 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-xs"
               >
                 + Add ({selectedCatCheckboxes.length})
               </button>
@@ -534,7 +534,7 @@ export default function MenuManagementPage() {
                     <h2 className="text-base font-bold text-gray-900">
                       {selectedMenu.title}
                     </h2>
-                    <span className="px-2 py-0.5 bg-[#1C546D] text-white text-[10px] font-bold rounded uppercase">
+                    <span className="px-2 py-0.5 bg-[#1C546D] text-white text-sm font-bold rounded uppercase">
                       {selectedMenu.location === "header"
                         ? "Header Menu"
                         : selectedMenu.location === "footer"
@@ -542,7 +542,7 @@ export default function MenuManagementPage() {
                         : "Custom Menu"}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-500">
                     Handle: <span className="font-mono">{selectedMenu.slug}</span>
                   </p>
                 </div>
@@ -553,7 +553,7 @@ export default function MenuManagementPage() {
                       setMenuForm(selectedMenu);
                       setIsMenuModalOpen(true);
                     }}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-medium cursor-pointer"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 text-sm font-medium cursor-pointer"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                     <span>Edit Settings</span>
@@ -562,7 +562,7 @@ export default function MenuManagementPage() {
                     onClick={() =>
                       handleDeleteMenuContainer(selectedMenu._id, selectedMenu.title)
                     }
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium cursor-pointer"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Delete Menu</span>
@@ -572,12 +572,12 @@ export default function MenuManagementPage() {
 
               {/* Links Header with "Add Link" Button */}
               <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                <span className="text-sm font-bold text-gray-700 uppercase tracking-wide">
                   Menu Items ({selectedMenu.items?.length || 0})
                 </span>
                 <button
                   onClick={handleOpenAddItem}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-xs font-semibold cursor-pointer transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-sm font-semibold cursor-pointer transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Link</span>
@@ -625,11 +625,11 @@ export default function MenuManagementPage() {
 
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-bold text-gray-900">
+                            <span className="text-base font-bold text-gray-900">
                               {item.label}
                             </span>
                             {item.badge && (
-                              <span className="px-1.5 py-0.2 bg-rose-100 text-rose-700 text-[10px] font-extrabold rounded">
+                              <span className="px-1.5 py-0.2 bg-rose-100 text-rose-700 text-xs font-extrabold rounded">
                                 {item.badge}
                               </span>
                             )}
@@ -639,7 +639,7 @@ export default function MenuManagementPage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 font-mono">
+                          <p className="text-sm text-gray-500 font-mono">
                             {item.url}
                           </p>
 
@@ -649,10 +649,10 @@ export default function MenuManagementPage() {
                               {item.children.map((child, cIdx) => (
                                 <span
                                   key={cIdx}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-[11px] font-medium rounded border border-gray-200"
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-sm font-medium rounded border border-gray-200"
                                 >
                                   <span>↳ {child.label}</span>
-                                  <span className="text-[10px] text-gray-400">
+                                  <span className="text-sm text-gray-400">
                                     ({child.url})
                                   </span>
                                 </span>
@@ -689,7 +689,7 @@ export default function MenuManagementPage() {
               <p className="text-sm font-semibold text-gray-800">No menu selected</p>
               <button
                 onClick={handleOpenCreateMenu}
-                className="px-4 py-2 rounded-md bg-[#1C546D] text-white text-xs font-bold"
+                className="px-4 py-2 rounded-md bg-[#1C546D] text-white text-sm font-bold"
               >
                 + Create Your First Menu
               </button>
@@ -703,7 +703,7 @@ export default function MenuManagementPage() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-md border border-gray-200 shadow-xl w-full max-w-md">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-gray-900">
+              <h3 className="text-base font-bold text-gray-900">
                 {menuForm._id ? "Edit Menu Settings" : "Create New Menu"}
               </h3>
               <button
@@ -716,7 +716,7 @@ export default function MenuManagementPage() {
 
             <div className="p-4 space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-700">
+                <label className="text-sm font-semibold text-gray-700">
                   Menu Title *
                 </label>
                 <input
@@ -735,12 +735,12 @@ export default function MenuManagementPage() {
                       slug: prev._id ? prev.slug : slug,
                     }));
                   }}
-                  className="w-full px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400"
+                  className="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-700">
+                <label className="text-sm font-semibold text-gray-700">
                   Handle / Slug
                 </label>
                 <input
@@ -748,24 +748,24 @@ export default function MenuManagementPage() {
                   placeholder="e.g. main-menu, footer-menu"
                   value={menuForm.slug}
                   onChange={(e) => setMenuForm({ ...menuForm, slug: e.target.value })}
-                  className="w-full px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md font-mono focus:bg-white focus:outline-none focus:border-gray-400"
+                  className="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-md font-mono focus:bg-white focus:outline-none focus:border-gray-400"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-700">
+                <label className="text-sm font-semibold text-gray-700">
                   Storefront Placement
                 </label>
                 <select
                   value={menuForm.location || "header"}
                   onChange={(e) => setMenuForm({ ...menuForm, location: e.target.value })}
-                  className="w-full px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 cursor-pointer"
+                  className="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 cursor-pointer"
                 >
                   <option value="header">Header Navigation (Top Bar)</option>
                   <option value="footer">Footer Navigation</option>
                   <option value="custom">Custom Menu</option>
                 </select>
-                <p className="text-[11px] text-gray-400">
+                <p className="text-sm text-gray-400">
                   &quot;Header Navigation&quot; displays in the storefront header navbar. &quot;Footer Navigation&quot; displays in the footer.
                 </p>
               </div>
@@ -775,7 +775,7 @@ export default function MenuManagementPage() {
               <button
                 type="button"
                 onClick={() => setIsMenuModalOpen(false)}
-                className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 text-xs font-medium"
+                className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 text-sm font-medium"
               >
                 Cancel
               </button>
@@ -783,7 +783,7 @@ export default function MenuManagementPage() {
                 type="button"
                 onClick={handleSaveMenuContainer}
                 disabled={saving}
-                className="px-4 py-1.5 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-xs font-semibold disabled:opacity-50"
+                className="px-4 py-1.5 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-sm font-semibold disabled:opacity-50"
               >
                 {saving ? "Saving..." : menuForm._id ? "Update Menu" : "Create Menu"}
               </button>
@@ -797,7 +797,7 @@ export default function MenuManagementPage() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-md border border-gray-200 shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-gray-900">
+              <h3 className="text-base font-bold text-gray-900">
                 {editingItemIndex !== null ? "Edit Link" : "Add Link to Menu"}
               </h3>
               <button
@@ -811,7 +811,7 @@ export default function MenuManagementPage() {
             <div className="p-4 space-y-3.5">
               {/* Presets */}
               <div className="space-y-1.5">
-                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                   Quick Presets:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -820,7 +820,7 @@ export default function MenuManagementPage() {
                       key={p.url}
                       type="button"
                       onClick={() => setItemForm({ ...itemForm, label: p.label, url: p.url })}
-                      className="px-2 py-0.5 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-medium cursor-pointer"
+                      className="px-2 py-0.5 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium cursor-pointer"
                     >
                       {p.label}
                     </button>
@@ -836,7 +836,7 @@ export default function MenuManagementPage() {
                           url: `/category/${cat.slug || cat._id}`,
                         })
                       }
-                      className="px-2 py-0.5 rounded bg-sky-50 hover:bg-sky-100 text-sky-800 text-[11px] font-medium cursor-pointer transition-colors"
+                      className="px-2 py-0.5 rounded bg-sky-50 hover:bg-sky-100 text-sky-800 text-sm font-medium cursor-pointer transition-colors"
                     >
                       📁 {cat.name}
                     </button>
@@ -846,7 +846,7 @@ export default function MenuManagementPage() {
 
               {/* Category Dropdown Auto-Filler */}
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-700">
+                <label className="text-sm font-semibold text-gray-700">
                   Link to Category (Auto-fills Label & URL)
                 </label>
                 <select
@@ -863,7 +863,7 @@ export default function MenuManagementPage() {
                     }
                   }}
                   defaultValue=""
-                  className="w-full px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400 cursor-pointer"
+                  className="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400 cursor-pointer"
                 >
                   <option value="">-- Or choose a category to auto-fill --</option>
                   {flatCategories.map((c) => (
@@ -877,7 +877,7 @@ export default function MenuManagementPage() {
               {/* Label & URL */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-700">
+                  <label className="text-sm font-semibold text-gray-700">
                     Link Label *
                   </label>
                   <input
@@ -885,12 +885,12 @@ export default function MenuManagementPage() {
                     placeholder="e.g. Shop, Combos, About"
                     value={itemForm.label}
                     onChange={(e) => setItemForm({ ...itemForm, label: e.target.value })}
-                    className="w-full px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400"
+                    className="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-700">
+                  <label className="text-sm font-semibold text-gray-700">
                     Destination URL *
                   </label>
                   <input
@@ -898,7 +898,7 @@ export default function MenuManagementPage() {
                     placeholder="e.g. /shop, /combo, https://..."
                     value={itemForm.url}
                     onChange={(e) => setItemForm({ ...itemForm, url: e.target.value })}
-                    className="w-full px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400 font-mono"
+                    className="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400 font-mono"
                   />
                 </div>
               </div>
@@ -906,7 +906,7 @@ export default function MenuManagementPage() {
               {/* Highlight Badge */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-700">
+                  <label className="text-sm font-semibold text-gray-700">
                     Highlight Badge (Optional)
                   </label>
                   <input
@@ -914,12 +914,12 @@ export default function MenuManagementPage() {
                     placeholder="e.g. Hot, Sale, New"
                     value={itemForm.badge || ""}
                     onChange={(e) => setItemForm({ ...itemForm, badge: e.target.value })}
-                    className="w-full px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400"
+                    className="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-md focus:bg-white focus:outline-none focus:border-gray-400"
                   />
                 </div>
 
                 <div className="flex items-center pt-5">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
                     <input
                       type="checkbox"
                       checked={itemForm.openInNewTab}
@@ -936,7 +936,7 @@ export default function MenuManagementPage() {
               {/* Sub-menu (Children) */}
               <div className="space-y-2 pt-3 border-t border-gray-100">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
                     <FolderTree className="w-3.5 h-3.5 text-[#1C546D]" />
                     <span>Sub-Menu Links (Dropdown)</span>
                   </label>
@@ -985,7 +985,7 @@ export default function MenuManagementPage() {
                             }
                           }}
                           defaultValue=""
-                          className="w-24 text-[10px] bg-white border border-gray-200 rounded px-1 py-1 text-gray-600 cursor-pointer"
+                          className="w-24 text-xs bg-white border border-gray-200 rounded px-1 py-1 text-gray-600 cursor-pointer"
                         >
                           <option value="">📁 Pick Cat</option>
                           {flatCategories.map((c) => (
@@ -1005,7 +1005,7 @@ export default function MenuManagementPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-gray-400">
+                  <p className="text-sm text-gray-400">
                     No sub-items. Click &quot;+ Add Sub-Item&quot; to create a hover dropdown menu for this link.
                   </p>
                 )}
@@ -1016,14 +1016,14 @@ export default function MenuManagementPage() {
               <button
                 type="button"
                 onClick={() => setIsItemModalOpen(false)}
-                className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 text-xs font-medium"
+                className="px-3 py-1.5 rounded-md border border-gray-300 text-gray-700 text-sm font-medium"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSaveItem}
-                className="px-4 py-1.5 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-xs font-semibold"
+                className="px-4 py-1.5 rounded-md bg-[#1C546D] hover:bg-[#164458] text-white text-sm font-semibold"
               >
                 Save Link
               </button>

@@ -68,7 +68,7 @@ export default function SettingsLayout({ children }) {
         <div className="space-y-6">
             <div>
                 <h1 className="text-3xl font-bold text-[#1E556E] mb-2">Settings</h1>
-                <p className="text-muted-foreground">Manage your store configuration and preferences</p>
+                <p className="text-base text-muted-foreground">Manage your store configuration and preferences</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -91,10 +91,10 @@ export default function SettingsLayout({ children }) {
                                     >
                                         <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${isActive ? "text-white" : "text-[#1E556E]"}`} />
                                         <div className="flex-1 min-w-0">
-                                            <p className={`font-semibold text-sm ${isActive ? "text-white" : ""}`}>
+                                            <p className={`font-semibold text-base ${isActive ? "text-white" : ""}`}>
                                                 {item.label}
                                             </p>
-                                            <p className={`text-xs mt-0.5 ${isActive ? "text-white/80" : "text-muted-foreground"}`}>
+                                            <p className={`text-sm mt-0.5 ${isActive ? "text-white/80" : "text-muted-foreground"}`}>
                                                 {item.description}
                                             </p>
                                         </div>

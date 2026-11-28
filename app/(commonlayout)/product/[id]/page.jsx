@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import ProductDetailsClient from "@/components/Shop/ProductDetailsClient"
 import { notFound } from "next/navigation"
+import { getStoreSettings } from "@/lib/dataService"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -35,6 +36,7 @@ export default async function ProductPage({ params }) {
   const { id } = await params
   let product = null
   let relatedProducts = []
+  const settings = await getStoreSettings()
 
   try {
     const { db } = await connectToDatabase()
@@ -69,7 +71,11 @@ export default async function ProductPage({ params }) {
 
   return (
     <main className="min-h-screen bg-slate-50/50">
-      <ProductDetailsClient product={product} relatedProducts={relatedProducts} />
+      <ProductDetailsClient
+        product={product}
+        relatedProducts={relatedProducts}
+        whatsappNumber={settings?.whatsappNumber || ""}
+      />
     </main>
   )
 }

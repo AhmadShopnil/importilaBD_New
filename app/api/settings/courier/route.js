@@ -1,12 +1,17 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached, clearCache } from "@/lib/cache"
 
 export async function GET() {
     const admin = await getAdminAuth()
     if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     try {
+        const cacheKey = "settings_courier"
+        const cached = getCached(cacheKey)
+        if (cached) return NextResponse.json(cached)
+
         const { db } = await connectToDatabase()
         // Fetch settings with type 'courier'
         let settings = await db.collection("settings").findOne({ type: "courier" })
@@ -27,6 +32,7 @@ export async function GET() {
             }
         }
 
+        setCached(cacheKey, settings, 300)
         return NextResponse.json(settings)
     } catch (error) {
         console.error("GET /api/settings/courier error:", error)
@@ -55,6 +61,7 @@ export async function PUT(request) {
             { upsert: true }
         )
 
+        clearCache("settings_courier")
         return NextResponse.json({ success: true, result })
     } catch (error) {
         console.error("PUT /api/settings/courier error:", error)

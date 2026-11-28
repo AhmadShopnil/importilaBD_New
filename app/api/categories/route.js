@@ -1,9 +1,14 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached, clearCache } from "@/lib/cache"
 
 export async function GET() {
   try {
+    const cacheKey = "categories_tree"
+    const cached = getCached(cacheKey)
+    if (cached) return NextResponse.json(cached)
+
     const { db } = await connectToDatabase()
     const categories = await db.collection("categories").find({}).sort({ order: 1 }).toArray()
 
@@ -23,6 +28,7 @@ export async function GET() {
       }
     })
 
+    setCached(cacheKey, rootCategories, 300)
     return NextResponse.json(rootCategories)
   } catch (error) {
     console.error("GET /api/categories error:", error)
@@ -58,6 +64,7 @@ export async function POST(request) {
       updatedAt: new Date(),
     })
 
+    clearCache("categories_")
     return NextResponse.json({ _id: result.insertedId, ...body, slug }, { status: 201 })
   } catch (error) {
     console.error("POST /api/categories error:", error)

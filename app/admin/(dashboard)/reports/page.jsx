@@ -223,7 +223,11 @@ export default function ReportsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {sales.filter(day => (day.totalOrders > 0 || day.deliveredOrders > 0)).map((day, idx) => (
+              {sales
+                .filter(day => (day.totalOrders > 0 || day.deliveredOrders > 0))
+                .slice()
+                .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+                .map((day, idx) => (
                 <tr key={idx} className="hover:bg-muted/20 transition-colors">
                   <td className="px-5 py-3.5 font-semibold text-gray-900">
                     {new Date(day.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}

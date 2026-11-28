@@ -9,8 +9,11 @@ export async function GET() {
   try {
     const { db } = await connectToDatabase()
 
-    // Get all active (non-trashed) products and extract variant stocks
-    const products = await db.collection("products").find({ isTrashed: { $ne: true } }).toArray()
+    // Get all active (non-trashed) products and extract variant stocks (projection only needed fields)
+    const products = await db.collection("products")
+      .find({ isTrashed: { $ne: true } })
+      .project({ name: 1, variants: 1 })
+      .toArray()
 
     const stocks = products?.map((product) => ({
       productId: product._id,

@@ -10,13 +10,13 @@ const Combos = ({ combos }) => {
       <Container>
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg md:text-xl font-bold text-[#1C546D]">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1C546D]">
             Combo Offers
           </h2>
 
           <Link
             href="/combo"
-            className="text-xs md:text-sm font-medium text-[#1C546D] hover:underline flex items-center gap-1 transition-colors"
+            className="text-sm md:text-base font-medium text-[#1C546D] hover:underline flex items-center gap-1 transition-colors"
           >
             <span>View All</span>
             <span>→</span>
@@ -46,7 +46,7 @@ const Combos = ({ combos }) => {
                     className="object-cover hover:scale-102 transition-transform duration-300"
                   />
                   {hasDiscount && (
-                    <span className="absolute top-2 left-2 bg-[#1C546D] text-white text-[10px] font-medium px-2 py-0.5 rounded-sm">
+                    <span className="absolute top-2 left-2 bg-[#1C546D] text-white text-xs font-medium px-2 py-0.5 rounded-sm">
                       SAVE ৳{combo.price - combo.offerPrice}
                     </span>
                   )}
@@ -56,17 +56,17 @@ const Combos = ({ combos }) => {
                 <div className="p-3 sm:p-4 flex flex-col flex-1 justify-between gap-3">
                   <div>
                     <Link href={`/combo/kids/${combo.slug}`}>
-                      <h3 className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-1 hover:text-[#1C546D] transition-colors">
+                      <h3 className="text-sm sm:text-base font-semibold text-gray-800 line-clamp-1 hover:text-[#1C546D] transition-colors">
                         {combo.title}
                       </h3>
                     </Link>
 
                     <div className="flex items-baseline gap-2 mt-1.5">
-                      <span className="text-sm sm:text-base font-bold text-[#1C546D]">
+                      <span className="text-base sm:text-lg font-bold text-[#1C546D]">
                         ৳{combo.offerPrice || combo.price}
                       </span>
                       {hasDiscount && (
-                        <span className="text-xs text-gray-400 line-through">
+                        <span className="text-sm text-gray-400 line-through">
                           ৳{combo.price}
                         </span>
                       )}
@@ -75,7 +75,7 @@ const Combos = ({ combos }) => {
 
                   <Link
                     href={`/combo/kids/${combo.slug}`}
-                    className="w-full py-2 bg-[#1C546D] hover:bg-[#164458] text-white text-xs sm:text-sm font-medium rounded-md text-center transition-colors block"
+                    className="w-full py-2 bg-[#1C546D] hover:bg-[#164458] text-white text-sm sm:text-base font-medium rounded-md text-center transition-colors block"
                   >
                     View Combo
                   </Link>

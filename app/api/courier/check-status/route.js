@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { getAdminAuth } from '@/lib/auth';
+import { getCached, setCached } from '@/lib/cache';
 
 export async function GET(req) {
     const admin = await getAdminAuth();
@@ -15,7 +16,13 @@ export async function GET(req) {
 
     try {
         const { db } = await connectToDatabase();
-        const settings = await db.collection('settings').findOne({ type: 'courier' });
+        // Get courier settings (cached for 5 min)
+        const courierCacheKey = 'settings_courier'
+        let settings = getCached(courierCacheKey)
+        if (!settings) {
+            settings = await db.collection('settings').findOne({ type: 'courier' })
+            if (settings) setCached(courierCacheKey, settings, 300)
+        }
 
         const provider = settings?.providers?.find(p => p.isActive && (p.name.includes("Steadfast") || p?.baseUrl?.includes("packzy")));
         // Or simplified: just take the first active one, or specifically steadfast for now.

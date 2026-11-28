@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
 import { ObjectId } from "mongodb"
+import { clearCache } from "@/lib/cache"
 
 export async function GET(request, context) {
     try {
@@ -61,6 +62,7 @@ export async function PUT(request, context) {
             return NextResponse.json({ error: "Slider not found" }, { status: 404 })
         }
 
+        clearCache("sliders_")
         return NextResponse.json({ message: "Slider updated successfully" })
     } catch (error) {
         console.error("PUT /api/sliders/[id] error:", error)
@@ -82,6 +84,7 @@ export async function DELETE(request, context) {
             return NextResponse.json({ error: "Slider not found" }, { status: 404 })
         }
 
+        clearCache("sliders_")
         return NextResponse.json({ message: "Slider deleted successfully" })
     } catch (error) {
         console.error("DELETE /api/sliders/[id] error:", error)

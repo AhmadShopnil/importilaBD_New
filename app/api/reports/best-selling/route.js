@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached } from "@/lib/cache"
 
 export async function GET(request) {
     const admin = await getAdminAuth()
@@ -12,6 +13,11 @@ export async function GET(request) {
         const startDate = searchParams.get("startDate")
         const endDate = searchParams.get("endDate")
         const limit = parseInt(searchParams.get("limit") || "50")
+
+        // Check cache first (2 min TTL)
+        const cacheKey = `report_best_selling_${filter || "default"}_${startDate || ""}_${endDate || ""}_${limit}`
+        const cached = getCached(cacheKey)
+        if (cached) return NextResponse.json(cached)
 
         const { db } = await connectToDatabase()
 
@@ -150,14 +156,16 @@ export async function GET(request) {
         // Trim to requested limit (default 100)
         const finalReport = report.slice(0, limit)
 
-        return NextResponse.json({
+        const result = {
             report: finalReport,
             stats: {
                 totalGross: statsForPeriod.totalGross,
                 totalShipping: statsForPeriod.totalShipping,
                 totalNet: statsForPeriod.totalGross - statsForPeriod.totalShipping
             }
-        })
+        }
+        setCached(cacheKey, result, 120)
+        return NextResponse.json(result)
     } catch (error) {
         console.error("GET /api/reports/best-selling error:", error)
         return NextResponse.json({ error: "Failed to fetch best selling report" }, { status: 500 })

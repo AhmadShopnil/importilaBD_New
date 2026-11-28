@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
 import { ObjectId } from "mongodb"
+import { getCached, setCached, clearCache } from "@/lib/cache"
 
 const INITIAL_MENUS = [
   {
@@ -76,6 +77,11 @@ export async function GET(request) {
     const location = searchParams.get("location")
     const slug = searchParams.get("slug")
 
+    // Build a cache key based on query params
+    const cacheKey = `menus_${slug || location || "all"}`
+    const cached = getCached(cacheKey)
+    if (cached) return NextResponse.json(cached)
+
     const { db } = await connectToDatabase()
     let menus = await db.collection("menus").find({}).sort({ createdAt: 1 }).toArray()
 
@@ -97,14 +103,17 @@ export async function GET(request) {
 
     if (slug) {
       const single = menus.find((m) => m.slug === slug)
+      setCached(cacheKey, single || null, 300)
       return NextResponse.json(single || null)
     }
 
     if (location) {
       const match = menus.find((m) => m.location === location && m.isActive !== false)
+      setCached(cacheKey, match || null, 300)
       return NextResponse.json(match || null)
     }
 
+    setCached(cacheKey, menus, 300)
     return NextResponse.json(menus)
   } catch (error) {
     console.error("GET /api/menus error:", error)
@@ -144,6 +153,7 @@ export async function POST(request) {
     }
 
     const result = await db.collection("menus").insertOne(menu)
+    clearCache("menus_")
     return NextResponse.json({ _id: result.insertedId, ...menu }, { status: 201 })
   } catch (error) {
     console.error("POST /api/menus error:", error)
@@ -180,6 +190,7 @@ export async function PUT(request) {
       { $set: sanitized }
     )
 
+    clearCache("menus_")
     return NextResponse.json({ success: true, result })
   } catch (error) {
     console.error("PUT /api/menus error:", error)
@@ -202,6 +213,7 @@ export async function DELETE(request) {
     const { db } = await connectToDatabase()
     await db.collection("menus").deleteOne({ _id: new ObjectId(id) })
 
+    clearCache("menus_")
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("DELETE /api/menus error:", error)

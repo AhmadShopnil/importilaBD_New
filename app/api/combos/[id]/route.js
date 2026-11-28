@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { uploadToCloudinary } from "@/lib/cloudinary"
 import { ObjectId } from "mongodb"
 import { getAdminAuth } from "@/lib/auth"
+import { clearCache } from "@/lib/cache"
 
 /* ================= GET ================= */
 export async function GET(request, context) {
@@ -179,6 +180,7 @@ export async function PUT(request, context) {
       return NextResponse.json({ error: "Combo not found" }, { status: 404 })
     }
 
+    clearCache("combos_")
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("PUT /api/combos/[id] error:", error)
@@ -203,6 +205,7 @@ export async function DELETE(request, context) {
       return NextResponse.json({ error: "Combo not found" }, { status: 404 })
     }
 
+    clearCache("combos_")
     return NextResponse.json({ message: "Combo deleted successfully" })
   } catch (error) {
     console.error("DELETE /api/combos/[id] error:", error)

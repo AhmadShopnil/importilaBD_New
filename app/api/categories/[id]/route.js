@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { clearCache } from "@/lib/cache"
 
 export async function PUT(request, context) {
   const admin = await getAdminAuth()
@@ -30,6 +31,7 @@ export async function PUT(request, context) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 })
     }
 
+    clearCache("categories_")
     return NextResponse.json({ message: "Category updated" })
   } catch (error) {
     console.error("PUT /api/categories/[id] error:", error)
@@ -53,6 +55,7 @@ export async function DELETE(request, context) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 })
     }
 
+    clearCache("categories_")
     return NextResponse.json({ message: "Category deleted" })
   } catch (error) {
     console.error("DELETE /api/categories/[id] error:", error)

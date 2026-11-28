@@ -21,7 +21,7 @@ export default async function page() {
                 {/* Header */}
                 <div className="flex items-center justify-between  mb-4 px-0.5 ">
                     <div>
-                        <h2 className="text-xl md:text-2xl font-semibold text-[#1C546D]  ">
+                        <h2 className="text-2xl md:text-3xl font-semibold text-[#1C546D]  ">
                             All Combos
                         </h2>
 
@@ -70,7 +70,7 @@ export default async function page() {
                             <div className="px-5">
                                 <Link
                                     href={`/combo/kids/${combo?.slug}`}
-                                    className="font-semibold text-sm  md:text-base text-[#1C546D] ">
+                                    className="font-semibold text-base md:text-lg text-[#1C546D] ">
                                     {combo?.title}
                                 </Link>
 
@@ -80,7 +80,7 @@ export default async function page() {
 
                                     <Link
                                         href={`/combo/kids/${combo?.slug}`}
-                                        className="cursor-pointer w-full py-1 mt-1 bg-[#34667B] rounded-md flex items-center justify-center text-white hover:scale-105 transition-transform shadow-md">
+                                        className="cursor-pointer w-full py-2 mt-2 text-sm sm:text-base font-medium bg-[#34667B] rounded-md flex items-center justify-center text-white hover:scale-105 transition-transform shadow-md">
                                         Buy Now
                                     </Link>
                                 </div>

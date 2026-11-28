@@ -53,37 +53,37 @@ const Menubar = ({ menus = [], settings = {} }) => {
   };
 
   return (
-    <header className="bg-white sticky top-0 z-50 border-b border-gray-200">
-      <Container className="flex items-center justify-between h-16 px-4">
+    <header className="bg-white/95 backdrop-blur-xs sticky top-0 z-50 border-b border-gray-200 shadow-xs">
+      <Container className="flex items-center justify-between h-[72px] sm:h-20 px-4">
         {/* Mobile Menu Button */}
         <div className="flex items-center gap-2 lg:hidden">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100"
+            className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
         {/* Brand: Logo, Name, or Both */}
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-3 py-1 shrink-0">
           {(storeDisplayMode === "logo_only" || storeDisplayMode === "both" || !storeDisplayMode) && storeLogo && (
             <img
               src={storeLogo}
               alt={storeName}
-              className="h-8 sm:h-9 w-auto max-w-[120px] sm:max-w-[150px] object-contain"
+              className="h-12 sm:h-14 w-auto max-w-[185px] sm:max-w-[240px] object-contain transition-transform duration-200 hover:scale-[1.02]"
             />
           )}
           {(storeDisplayMode === "name_only" || storeDisplayMode === "both" || !storeLogo) && (
-            <span className="text-lg sm:text-xl font-bold tracking-tight text-[#1C546D]">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-[#1C546D]">
               {storeName}
             </span>
           )}
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-7">
+        <nav className="hidden lg:flex items-center gap-8">
           {displayLinks.map((item, idx) => {
             const href = item.url || item.href || "/";
             const label = item.label || item.name;
@@ -102,7 +102,7 @@ const Menubar = ({ menus = [], settings = {} }) => {
                     href={href}
                     target={item.openInNewTab ? "_blank" : undefined}
                     rel={item.openInNewTab ? "noopener noreferrer" : undefined}
-                    className={`text-sm font-medium transition-colors py-1 inline-flex items-center gap-1 relative ${
+                    className={`text-base font-medium transition-colors py-1 inline-flex items-center gap-1 relative ${
                       isActive
                         ? "text-[#1C546D] font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#1C546D]"
                         : "text-gray-600 hover:text-[#1C546D]"
@@ -110,11 +110,11 @@ const Menubar = ({ menus = [], settings = {} }) => {
                   >
                     <span>{label}</span>
                     {item.badge && (
-                      <span className="px-1.5 py-0.2 bg-rose-100 text-rose-700 text-[9px] font-extrabold rounded">
+                      <span className="px-1.5 py-0.2 bg-rose-100 text-rose-700 text-[10px] font-extrabold rounded">
                         {item.badge}
                       </span>
                     )}
-                    <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:rotate-180 transition-transform" />
+                    <ChevronDown className="w-4 h-4 opacity-60 group-hover:rotate-180 transition-transform" />
                   </Link>
 
                   {/* Dropdown Menu */}
@@ -125,7 +125,7 @@ const Menubar = ({ menus = [], settings = {} }) => {
                         href={child.url}
                         target={child.openInNewTab ? "_blank" : undefined}
                         rel={child.openInNewTab ? "noopener noreferrer" : undefined}
-                        className="block px-3.5 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#1C546D] transition-colors"
+                        className="block px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#1C546D] transition-colors"
                       >
                         {child.label}
                       </Link>
@@ -141,7 +141,7 @@ const Menubar = ({ menus = [], settings = {} }) => {
                 href={href}
                 target={item.openInNewTab ? "_blank" : undefined}
                 rel={item.openInNewTab ? "noopener noreferrer" : undefined}
-                className={`text-sm font-medium transition-colors py-1 inline-flex items-center gap-1.5 relative ${
+                className={`text-base font-medium transition-colors py-1 inline-flex items-center gap-1.5 relative ${
                   isActive
                     ? "text-[#1C546D] font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#1C546D]"
                     : "text-gray-600 hover:text-[#1C546D]"
@@ -149,7 +149,7 @@ const Menubar = ({ menus = [], settings = {} }) => {
               >
                 <span>{label}</span>
                 {item.badge && (
-                  <span className="px-1.5 py-0.2 bg-rose-100 text-rose-700 text-[9px] font-extrabold rounded">
+                  <span className="px-1.5 py-0.2 bg-rose-100 text-rose-700 text-[10px] font-extrabold rounded">
                     {item.badge}
                   </span>
                 )}
@@ -201,7 +201,7 @@ const Menubar = ({ menus = [], settings = {} }) => {
                     target={item.openInNewTab ? "_blank" : undefined}
                     rel={item.openInNewTab ? "noopener noreferrer" : undefined}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center justify-between px-3 py-2 rounded-md text-base font-medium transition-colors ${
                       isActive
                         ? "bg-gray-100 text-[#1C546D] font-semibold"
                         : "text-gray-700 hover:bg-gray-50"
@@ -210,12 +210,12 @@ const Menubar = ({ menus = [], settings = {} }) => {
                     <span className="flex items-center gap-1.5">
                       <span>{label}</span>
                       {item.badge && (
-                        <span className="px-1.5 py-0.2 bg-rose-100 text-rose-700 text-[9px] font-extrabold rounded">
+                        <span className="px-1.5 py-0.2 bg-rose-100 text-rose-700 text-[10px] font-extrabold rounded">
                           {item.badge}
                         </span>
                       )}
                     </span>
-                    {hasChildren && <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+                    {hasChildren && <ChevronDown className="w-4 h-4 text-gray-400" />}
                   </Link>
 
                   {/* Mobile Submenu links */}
@@ -228,7 +228,7 @@ const Menubar = ({ menus = [], settings = {} }) => {
                           target={child.openInNewTab ? "_blank" : undefined}
                           rel={child.openInNewTab ? "noopener noreferrer" : undefined}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="block px-3 py-1.5 text-xs text-gray-600 hover:text-[#1C546D]"
+                          className="block px-3 py-1.5 text-sm text-gray-600 hover:text-[#1C546D]"
                         >
                           {child.label}
                         </Link>

@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached } from "@/lib/cache"
 
 export async function GET(request) {
     const admin = await getAdminAuth()
@@ -10,6 +11,11 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url)
         const filter = searchParams.get("filter") || (searchParams.get("month") ? "month" : "30d")
         const month = searchParams.get("month") // Format: YYYY-MM
+
+        // Check cache first (2 min TTL)
+        const cacheKey = `report_sources_${filter}_${month || ""}`
+        const cached = getCached(cacheKey)
+        if (cached) return NextResponse.json(cached)
 
         const { db } = await connectToDatabase()
 
@@ -145,7 +151,9 @@ export async function GET(request) {
             }
         })
 
-        return NextResponse.json({ sourceStats: enriched, month })
+        const response = { sourceStats: enriched, month }
+        setCached(cacheKey, response, 120)
+        return NextResponse.json(response)
     } catch (error) {
         console.error("GET /api/reports/sources error:", error)
         return NextResponse.json({ error: "Failed to fetch source report" }, { status: 500 })

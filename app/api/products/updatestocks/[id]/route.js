@@ -13,12 +13,16 @@ export async function PUT(request, context) {
 
     const { db } = await connectToDatabase()
 
-    // Loop through variants in the body and update each in the product
-    for (const variant of body.variants) {
-      await db.collection("products").updateOne(
-        { _id: new ObjectId(id), "variants.sku": variant.sku },
-        { $set: { "variants.$.stock": variant.stock } }
-      )
+    // Use bulkWrite for all variant updates in a single DB round trip
+    const bulkOps = body.variants.map(variant => ({
+      updateOne: {
+        filter: { _id: new ObjectId(id), "variants.sku": variant.sku },
+        update: { $set: { "variants.$.stock": variant.stock } }
+      }
+    }))
+
+    if (bulkOps.length > 0) {
+      await db.collection("products").bulkWrite(bulkOps)
     }
 
     return NextResponse.json({ message: "Stock updated successfully" })

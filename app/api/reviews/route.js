@@ -1,9 +1,14 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached, clearCache } from "@/lib/cache"
 
 export async function GET(request) {
     try {
+        const cacheKey = "reviews_active"
+        const cached = getCached(cacheKey)
+        if (cached) return NextResponse.json(cached)
+
         const { db } = await connectToDatabase()
         const reviews = await db.collection("reviews")
             .find({ isActive: true })
@@ -15,6 +20,7 @@ export async function GET(request) {
             imageUrl: typeof review.imageUrl === 'object' && review.imageUrl !== null ? (review.imageUrl.secure_url || review.imageUrl.url) : review.imageUrl
         }))
 
+        setCached(cacheKey, normalizedReviews, 300)
         return NextResponse.json(normalizedReviews)
     } catch (error) {
         console.error("GET /api/reviews error:", error)
@@ -49,6 +55,7 @@ export async function POST(request) {
             updatedAt: new Date(),
         })
 
+        clearCache("reviews_")
         return NextResponse.json({ _id: result.insertedId }, { status: 201 })
     } catch (error) {
         console.error("POST /api/reviews error:", error)

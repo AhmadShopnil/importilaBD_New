@@ -1,15 +1,21 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached, clearCache } from "@/lib/cache"
 
 export async function GET(request) {
     try {
+        const cacheKey = "sliders_all"
+        const cached = getCached(cacheKey)
+        if (cached) return NextResponse.json(cached)
+
         const { db } = await connectToDatabase()
         const sliders = await db.collection("sliders")
             .find({})
             .sort({ createdAt: -1 })
             .toArray()
 
+        setCached(cacheKey, sliders, 120)
         return NextResponse.json(sliders)
     } catch (error) {
         console.error("GET /api/sliders error:", error)
@@ -46,6 +52,7 @@ export async function POST(request) {
             updatedAt: new Date(),
         })
 
+        clearCache("sliders_")
         return NextResponse.json({ _id: result.insertedId }, { status: 201 })
     } catch (error) {
         console.error("POST /api/sliders error:", error)

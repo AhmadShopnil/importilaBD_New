@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongodb"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached } from "@/lib/cache"
 
 export async function POST(req) {
     const admin = await getAdminAuth()
@@ -12,9 +13,13 @@ export async function POST(req) {
         const { db } = await connectToDatabase()
 
 
-        // Get Steadfast Credentials
-
-        let settings = await db.collection("settings").findOne({ type: "courier" })
+        // Get Steadfast Credentials (cached for 5 min)
+        const courierCacheKey = "settings_courier"
+        let settings = getCached(courierCacheKey)
+        if (!settings) {
+            settings = await db.collection("settings").findOne({ type: "courier" })
+            if (settings) setCached(courierCacheKey, settings, 300)
+        }
         let provider = settings?.providers?.find(
             p =>
                 p.isActive &&

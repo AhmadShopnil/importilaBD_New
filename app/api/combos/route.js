@@ -3,10 +3,15 @@ import { NextResponse } from "next/server";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { getAdminAuth } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import { getCached, setCached, clearCache } from "@/lib/cache";
 
 /* ================= GET ================= */
 export async function GET() {
   try {
+    const cacheKey = "combos_list"
+    const cached = getCached(cacheKey)
+    if (cached) return NextResponse.json(cached)
+
     const { db } = await connectToDatabase();
     const combos = await db.collection("combos").find().toArray();
     
@@ -50,6 +55,7 @@ export async function GET() {
       return combo;
     });
 
+    setCached(cacheKey, combosWithProducts, 60)
     return NextResponse.json(combosWithProducts);
   } catch (error) {
     console.error("GET /api/combos", error);
@@ -177,6 +183,7 @@ export async function POST(request) {
       updatedAt: new Date(),
     });
 
+    clearCache("combos_")
     return NextResponse.json(
       { _id: result.insertedId },
       { status: 201 }

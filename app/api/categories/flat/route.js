@@ -1,8 +1,13 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
+import { getCached, setCached } from "@/lib/cache"
 
 export async function GET() {
     try {
+        const cacheKey = "categories_flat"
+        const cached = getCached(cacheKey)
+        if (cached) return NextResponse.json(cached)
+
         const { db } = await connectToDatabase()
         const categories = await db.collection("categories")
             .find({ isActive: true })
@@ -33,6 +38,7 @@ export async function GET() {
             fullName: getPath(cat)
         }));
 
+        setCached(cacheKey, flatCategories, 300)
         return NextResponse.json(flatCategories)
     } catch (error) {
         console.error("GET /api/categories/flat error:", error)

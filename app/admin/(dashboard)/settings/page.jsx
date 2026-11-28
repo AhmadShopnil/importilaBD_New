@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Save, Store, Mail, Phone, MapPin, DollarSign, Image as ImageIcon, Truck, Upload, Layout, ShieldCheck } from "lucide-react"
+import { Save, Store, Mail, Phone, MapPin, DollarSign, Image as ImageIcon, Truck, Upload, Layout, ShieldCheck, MessageCircle } from "lucide-react"
 import toast from "react-hot-toast"
 import { BASE_URL } from "@/utils/baseUrl"
 import Loading from "@/components/Loader/Loading"
@@ -14,7 +14,11 @@ export default function GeneralSettingsPage() {
         storeName: "",
         storeEmail: "",
         storePhone: "",
+        whatsappNumber: "",
         storeAddress: "",
+        footerDescription: "",
+        facebookUrl: "",
+        copyrightText: "",
         storeCity: "",
         storeCountry: "",
         storeZipCode: "",
@@ -133,7 +137,7 @@ export default function GeneralSettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold mb-2">Store Name *</label>
+                        <label className="block text-base font-semibold mb-2">Store Name *</label>
                         <input
                             type="text"
                             required
@@ -145,7 +149,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                        <label className="block text-base font-semibold mb-2 flex items-center gap-2">
                             <Mail className="w-4 h-4" /> Store Email *
                         </label>
                         <input
@@ -159,7 +163,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                        <label className="block text-base font-semibold mb-2 flex items-center gap-2">
                             <Phone className="w-4 h-4" /> Store Phone *
                         </label>
                         <input
@@ -173,7 +177,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                        <label className="block text-base font-semibold mb-2 flex items-center gap-2">
                             <MapPin className="w-4 h-4" /> Street Address
                         </label>
                         <input
@@ -186,7 +190,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2">City</label>
+                        <label className="block text-base font-semibold mb-2">City</label>
                         <input
                             type="text"
                             value={settings.storeCity}
@@ -197,7 +201,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Zip Code</label>
+                        <label className="block text-base font-semibold mb-2">Zip Code</label>
                         <input
                             type="text"
                             value={settings.storeZipCode}
@@ -208,7 +212,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold mb-2">Country</label>
+                        <label className="block text-base font-semibold mb-2">Country</label>
                         <input
                             type="text"
                             value={settings.storeCountry}
@@ -216,6 +220,33 @@ export default function GeneralSettingsPage() {
                             className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-[#1E556E] outline-none"
                             placeholder="Bangladesh"
                         />
+                    </div>
+                </div>
+            </div>
+
+            {/* WhatsApp Contact Settings */}
+            <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+                <div className="flex items-center gap-2 mb-6">
+                    <MessageCircle className="w-5 h-5 text-[#25D366]" />
+                    <div>
+                        <h2 className="text-xl font-semibold">WhatsApp Order & Chat</h2>
+                        <p className="text-sm text-muted-foreground">Displayed on product details pages for direct customer orders and inquiries</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-base font-semibold mb-2">WhatsApp Number</label>
+                        <input
+                            type="tel"
+                            value={settings.whatsappNumber || ""}
+                            onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
+                            className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-[#25D366] outline-none"
+                            placeholder="e.g. 017XXXXXXXX or +88017XXXXXXXX"
+                        />
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Enter your active WhatsApp number. Leave empty to hide the WhatsApp button on product pages.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -229,7 +260,7 @@ export default function GeneralSettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Currency Code</label>
+                        <label className="block text-base font-semibold mb-2">Currency Code</label>
                         <select
                             value={settings.currency}
                             onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
@@ -244,7 +275,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Currency Symbol</label>
+                        <label className="block text-base font-semibold mb-2">Currency Symbol</label>
                         <input
                             type="text"
                             value={settings.currencySymbol}
@@ -255,7 +286,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Timezone</label>
+                        <label className="block text-base font-semibold mb-2">Timezone</label>
                         <select
                             value={settings.timezone}
                             onChange={(e) => setSettings({ ...settings, timezone: e.target.value })}
@@ -269,7 +300,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Date Format</label>
+                        <label className="block text-base font-semibold mb-2">Date Format</label>
                         <select
                             value={settings.dateFormat}
                             onChange={(e) => setSettings({ ...settings, dateFormat: e.target.value })}
@@ -282,7 +313,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Time Format</label>
+                        <label className="block text-base font-semibold mb-2">Time Format</label>
                         <select
                             value={settings.timeFormat}
                             onChange={(e) => setSettings({ ...settings, timeFormat: e.target.value })}
@@ -304,7 +335,7 @@ export default function GeneralSettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Inside Dhaka Charge (৳)</label>
+                        <label className="block text-base font-semibold mb-2">Inside Dhaka Charge (৳)</label>
                         <input
                             type="number"
                             value={settings.insideDhakaCharge}
@@ -315,7 +346,7 @@ export default function GeneralSettingsPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Outside Dhaka Charge (৳)</label>
+                        <label className="block text-base font-semibold mb-2">Outside Dhaka Charge (৳)</label>
                         <input
                             type="number"
                             value={settings.outsideDhakaCharge}
@@ -336,7 +367,7 @@ export default function GeneralSettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Low Stock Alert Threshold</label>
+                        <label className="block text-base font-semibold mb-2">Low Stock Alert Threshold</label>
                         <input
                             type="number"
                             min="0"
@@ -345,7 +376,7 @@ export default function GeneralSettingsPage() {
                             className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-[#1E556E] outline-none"
                             placeholder="10"
                         />
-                        <p className="text-xs text-muted-foreground mt-1">Products with stock under this amount will trigger a low stock alert.</p>
+                        <p className="text-sm text-muted-foreground mt-1">Products with stock under this amount will trigger a low stock alert.</p>
                     </div>
                 </div>
             </div>
@@ -357,7 +388,7 @@ export default function GeneralSettingsPage() {
                         <Store className="w-5 h-5 text-[#1E556E]" />
                         <div>
                             <h2 className="text-xl font-semibold">Storefront Branding</h2>
-                            <p className="text-xs text-muted-foreground">Manage how your brand appears on the public storefront</p>
+                            <p className="text-sm text-muted-foreground">Manage how your brand appears on the public storefront</p>
                         </div>
                     </div>
                 </div>
@@ -365,7 +396,7 @@ export default function GeneralSettingsPage() {
                 <div className="space-y-6">
                     {/* Storefront Name */}
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Storefront Brand Name *</label>
+                        <label className="block text-base font-semibold mb-2">Storefront Brand Name *</label>
                         <input
                             type="text"
                             required
@@ -378,7 +409,7 @@ export default function GeneralSettingsPage() {
 
                     {/* Storefront Logo Upload & Preview */}
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Storefront Logo</label>
+                        <label className="block text-base font-semibold mb-2">Storefront Logo</label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                             <div className="border border-border rounded-lg p-4 bg-muted/20">
                                 <div className="flex items-center gap-4">
@@ -390,12 +421,12 @@ export default function GeneralSettingsPage() {
                                                 className="max-h-full max-w-full object-contain"
                                             />
                                         ) : (
-                                            <span className="text-xs text-muted-foreground text-center">No logo</span>
+                                            <span className="text-sm text-muted-foreground text-center">No logo</span>
                                         )}
                                     </div>
                                     <div className="flex-1 space-y-2">
                                         <div className="flex flex-wrap gap-2">
-                                            <label className="cursor-pointer bg-[#1E556E] text-white px-3 py-1.5 rounded-md text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5">
+                                            <label className="cursor-pointer bg-[#1E556E] text-white px-3.5 py-2 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5">
                                                 <Upload className="w-3.5 h-3.5" />
                                                 <span>{uploadingField === "storeLogo" ? "Uploading..." : "Upload New"}</span>
                                                 <input
@@ -412,7 +443,7 @@ export default function GeneralSettingsPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => setMediaPickerTarget("storeLogo")}
-                                                className="bg-white border border-[#1E556E] text-[#1E556E] px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-[#1E556E]/5 transition-colors"
+                                                className="bg-white border border-[#1E556E] text-[#1E556E] px-3.5 py-2 rounded-md text-sm font-semibold hover:bg-[#1E556E]/5 transition-colors"
                                             >
                                                 Media Library
                                             </button>
@@ -420,13 +451,13 @@ export default function GeneralSettingsPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setSettings(prev => ({ ...prev, storeLogo: "" }))}
-                                                    className="text-red-500 hover:text-red-700 text-xs px-2 py-1.5"
+                                                    className="text-red-500 hover:text-red-700 text-sm px-2 py-1.5"
                                                 >
                                                     Clear
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-[11px] text-muted-foreground">Recommended: Transparent PNG or SVG (approx. 160×45px)</p>
+                                        <p className="text-sm text-muted-foreground">Recommended: Transparent PNG or SVG (approx. 160×45px)</p>
                                     </div>
                                 </div>
                                 <div className="mt-3">
@@ -434,7 +465,7 @@ export default function GeneralSettingsPage() {
                                         type="text"
                                         value={settings.storeLogo || ""}
                                         onChange={(e) => setSettings({ ...settings, storeLogo: e.target.value })}
-                                        className="w-full px-3 py-1.5 text-xs border border-border rounded-md bg-white text-muted-foreground"
+                                        className="w-full px-3.5 py-2 text-sm border border-border rounded-md bg-white text-muted-foreground"
                                         placeholder="Or paste Logo Image URL (e.g. /logo.svg or https://...)"
                                     />
                                 </div>
@@ -442,7 +473,7 @@ export default function GeneralSettingsPage() {
 
                             {/* Storefront Display Mode */}
                             <div className="space-y-3">
-                                <label className="block text-sm font-semibold">Storefront Header Display Mode</label>
+                                <label className="block text-base font-semibold">Storefront Header Display Mode</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {[
                                         { id: "logo_only", label: "Logo Only", desc: "Display logo image" },
@@ -459,7 +490,7 @@ export default function GeneralSettingsPage() {
                                             }`}
                                         >
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-bold text-foreground">{mode.label}</span>
+                                                <span className="text-sm font-bold text-foreground">{mode.label}</span>
                                                 <input
                                                     type="radio"
                                                     name="storeDisplayMode"
@@ -469,14 +500,14 @@ export default function GeneralSettingsPage() {
                                                     className="accent-[#1E556E]"
                                                 />
                                             </div>
-                                            <span className="text-[10px] text-muted-foreground leading-tight">{mode.desc}</span>
+                                            <span className="text-sm text-muted-foreground leading-tight">{mode.desc}</span>
                                         </label>
                                     ))}
                                 </div>
 
                                 {/* Live Preview Box */}
                                 <div className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                                    <span className="text-[10px] font-semibold uppercase text-slate-500 tracking-wider block mb-1">Storefront Live Preview</span>
+                                    <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider block mb-1">Storefront Live Preview</span>
                                     <div className="h-14 bg-white border border-slate-200 rounded px-4 flex items-center justify-between shadow-xs">
                                         <div className="flex items-center gap-2.5">
                                             {(settings.storeDisplayMode === "logo_only" || settings.storeDisplayMode === "both" || !settings.storeDisplayMode) && (
@@ -505,27 +536,66 @@ export default function GeneralSettingsPage() {
 
                     {/* Favicon */}
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Store Favicon URL</label>
-                        <div className="flex items-center gap-3">
-                            {settings.storeFavicon && (
-                                <img src={settings.storeFavicon} alt="Favicon" className="w-8 h-8 rounded border border-border p-1 object-contain" />
-                            )}
-                            <input
-                                type="url"
-                                value={settings.storeFavicon || ""}
-                                onChange={(e) => setSettings({ ...settings, storeFavicon: e.target.value })}
-                                className="flex-1 px-4 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-[#1E556E] outline-none text-sm"
-                                placeholder="https://example.com/favicon.ico"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setMediaPickerTarget("storeFavicon")}
-                                className="bg-white border border-border text-foreground px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-muted"
-                            >
-                                Browse
-                            </button>
+                        <label className="block text-base font-semibold mb-2">Store Favicon</label>
+                        <div className="border border-border rounded-lg p-4 bg-muted/20 max-w-xl">
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 bg-white border border-border rounded-md flex items-center justify-center p-2 overflow-hidden shadow-sm shrink-0">
+                                    {settings.storeFavicon ? (
+                                        <img
+                                            src={settings.storeFavicon}
+                                            alt="Store Favicon"
+                                            className="max-h-full max-w-full object-contain"
+                                        />
+                                    ) : (
+                                        <span className="text-sm text-muted-foreground text-center">No icon</span>
+                                    )}
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex flex-wrap gap-2">
+                                        <label className="cursor-pointer bg-[#1E556E] text-white px-3.5 py-2 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5">
+                                            <Upload className="w-3.5 h-3.5" />
+                                            <span>{uploadingField === "storeFavicon" ? "Uploading..." : "Upload New"}</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*,.ico"
+                                                disabled={uploadingField === "storeFavicon"}
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0]
+                                                    if (file) handleFileUpload(file, "storeFavicon")
+                                                }}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setMediaPickerTarget("storeFavicon")}
+                                            className="bg-white border border-[#1E556E] text-[#1E556E] px-3.5 py-2 rounded-md text-sm font-semibold hover:bg-[#1E556E]/5 transition-colors"
+                                        >
+                                            Media Library
+                                        </button>
+                                        {settings.storeFavicon && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setSettings(prev => ({ ...prev, storeFavicon: "" }))}
+                                                className="text-red-500 hover:text-red-700 text-sm px-2 py-1.5"
+                                            >
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">Recommended: 32×32px or 64×64px PNG, SVG, or ICO</p>
+                                </div>
+                            </div>
+                            <div className="mt-3">
+                                <input
+                                    type="text"
+                                    value={settings.storeFavicon || ""}
+                                    onChange={(e) => setSettings({ ...settings, storeFavicon: e.target.value })}
+                                    className="w-full px-3.5 py-2 text-sm border border-border rounded-md bg-white text-muted-foreground"
+                                    placeholder="Or paste Favicon URL (e.g. /favicon.ico or https://...)"
+                                />
+                            </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">Recommended: 32×32px PNG or ICO</p>
                     </div>
                 </div>
             </div>
@@ -537,7 +607,7 @@ export default function GeneralSettingsPage() {
                         <Layout className="w-5 h-5 text-[#1E556E]" />
                         <div>
                             <h2 className="text-xl font-semibold">Dashboard Branding</h2>
-                            <p className="text-xs text-muted-foreground">Manage branding displayed in the Admin Dashboard sidebar & header</p>
+                            <p className="text-sm text-muted-foreground">Manage branding displayed in the Admin Dashboard sidebar & header</p>
                         </div>
                     </div>
                 </div>
@@ -545,7 +615,7 @@ export default function GeneralSettingsPage() {
                 <div className="space-y-6">
                     {/* Dashboard Name */}
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Dashboard Brand Name</label>
+                        <label className="block text-base font-semibold mb-2">Dashboard Brand Name</label>
                         <input
                             type="text"
                             value={settings.dashboardName || ""}
@@ -557,7 +627,7 @@ export default function GeneralSettingsPage() {
 
                     {/* Dashboard Logo Upload & Preview */}
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Dashboard Logo</label>
+                        <label className="block text-base font-semibold mb-2">Dashboard Logo</label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                             <div className="border border-border rounded-lg p-4 bg-muted/20">
                                 <div className="flex items-center gap-4">
@@ -569,12 +639,12 @@ export default function GeneralSettingsPage() {
                                                 className="max-h-full max-w-full object-contain"
                                             />
                                         ) : (
-                                            <span className="text-xs text-muted-foreground text-center">No logo</span>
+                                            <span className="text-sm text-muted-foreground text-center">No logo</span>
                                         )}
                                     </div>
                                     <div className="flex-1 space-y-2">
                                         <div className="flex flex-wrap gap-2">
-                                            <label className="cursor-pointer bg-[#1E556E] text-white px-3 py-1.5 rounded-md text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5">
+                                            <label className="cursor-pointer bg-[#1E556E] text-white px-3.5 py-2 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5">
                                                 <Upload className="w-3.5 h-3.5" />
                                                 <span>{uploadingField === "dashboardLogo" ? "Uploading..." : "Upload New"}</span>
                                                 <input
@@ -591,7 +661,7 @@ export default function GeneralSettingsPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => setMediaPickerTarget("dashboardLogo")}
-                                                className="bg-white border border-[#1E556E] text-[#1E556E] px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-[#1E556E]/5 transition-colors"
+                                                className="bg-white border border-[#1E556E] text-[#1E556E] px-3.5 py-2 rounded-md text-sm font-semibold hover:bg-[#1E556E]/5 transition-colors"
                                             >
                                                 Media Library
                                             </button>
@@ -599,13 +669,13 @@ export default function GeneralSettingsPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setSettings(prev => ({ ...prev, dashboardLogo: "" }))}
-                                                    className="text-red-500 hover:text-red-700 text-xs px-2 py-1.5"
+                                                    className="text-red-500 hover:text-red-700 text-sm px-2 py-1.5"
                                                 >
                                                     Clear
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-[11px] text-muted-foreground">Logo for admin sidebar and mobile admin header</p>
+                                        <p className="text-sm text-muted-foreground">Logo for admin sidebar and mobile admin header</p>
                                     </div>
                                 </div>
                                 <div className="mt-3">
@@ -613,7 +683,7 @@ export default function GeneralSettingsPage() {
                                         type="text"
                                         value={settings.dashboardLogo || ""}
                                         onChange={(e) => setSettings({ ...settings, dashboardLogo: e.target.value })}
-                                        className="w-full px-3 py-1.5 text-xs border border-border rounded-md bg-white text-muted-foreground"
+                                        className="w-full px-3.5 py-2 text-sm border border-border rounded-md bg-white text-muted-foreground"
                                         placeholder="Or paste Logo Image URL (e.g. /logo.svg or https://...)"
                                     />
                                 </div>
@@ -621,7 +691,7 @@ export default function GeneralSettingsPage() {
 
                             {/* Dashboard Display Mode */}
                             <div className="space-y-3">
-                                <label className="block text-sm font-semibold">Dashboard Display Mode</label>
+                                <label className="block text-base font-semibold">Dashboard Display Mode</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {[
                                         { id: "logo_only", label: "Logo Only", desc: "Display logo image" },
@@ -638,7 +708,7 @@ export default function GeneralSettingsPage() {
                                             }`}
                                         >
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-bold text-foreground">{mode.label}</span>
+                                                <span className="text-sm font-bold text-foreground">{mode.label}</span>
                                                 <input
                                                     type="radio"
                                                     name="dashboardDisplayMode"
@@ -648,14 +718,14 @@ export default function GeneralSettingsPage() {
                                                     className="accent-[#1E556E]"
                                                 />
                                             </div>
-                                            <span className="text-[10px] text-muted-foreground leading-tight">{mode.desc}</span>
+                                            <span className="text-sm text-muted-foreground leading-tight">{mode.desc}</span>
                                         </label>
                                     ))}
                                 </div>
 
                                 {/* Live Dashboard Preview */}
                                 <div className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                                    <span className="text-[10px] font-semibold uppercase text-slate-500 tracking-wider block mb-1">Dashboard Sidebar Preview</span>
+                                    <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider block mb-1">Dashboard Sidebar Preview</span>
                                     <div className="h-16 bg-white border border-slate-200 rounded px-4 flex items-center justify-between shadow-xs">
                                         <div className="flex items-center gap-2.5 overflow-hidden">
                                             {(settings.dashboardDisplayMode === "logo_only" || settings.dashboardDisplayMode === "both" || !settings.dashboardDisplayMode) && (
@@ -680,6 +750,53 @@ export default function GeneralSettingsPage() {
                 </div>
             </div>
 
+            {/* Footer Settings */}
+            <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+                <div className="flex items-center gap-2 mb-6">
+                    <Layout className="w-5 h-5 text-[#1E556E]" />
+                    <div>
+                        <h2 className="text-xl font-semibold">Footer Information & Copyright</h2>
+                        <p className="text-sm text-muted-foreground">Customize the standard info and copyright text shown in the storefront footer (Phone, Email & Address are pulled from Store Information above)</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                        <label className="block text-base font-semibold mb-2">Footer Short Description / Tagline</label>
+                        <textarea
+                            rows={2}
+                            value={settings.footerDescription || ""}
+                            onChange={(e) => setSettings({ ...settings, footerDescription: e.target.value })}
+                            className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-[#1E556E] outline-none"
+                            placeholder="Quality kids clothing crafted for comfort, style, and everyday joy."
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-base font-semibold mb-2">Facebook Page URL (Optional)</label>
+                        <input
+                            type="text"
+                            value={settings.facebookUrl || ""}
+                            onChange={(e) => setSettings({ ...settings, facebookUrl: e.target.value })}
+                            className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-[#1E556E] outline-none"
+                            placeholder="https://facebook.com/yourpage"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-base font-semibold mb-2">Copyright Text</label>
+                        <input
+                            type="text"
+                            value={settings.copyrightText || ""}
+                            onChange={(e) => setSettings({ ...settings, copyrightText: e.target.value })}
+                            className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-[#1E556E] outline-none"
+                            placeholder={`© ${new Date().getFullYear()} ${settings.storeName || "Importila"}. All rights reserved.`}
+                        />
+                        <p className="text-sm text-muted-foreground mt-1">Leave empty to use the default automatic copyright text.</p>
+                    </div>
+                </div>
+            </div>
+
             {/* Terms and Conditions */}
             <div className="bg-white rounded-xl border border-border shadow-sm p-6">
                 <div className="flex items-center gap-2 mb-6">
@@ -690,7 +807,7 @@ export default function GeneralSettingsPage() {
                 <div className="space-y-4">
                     <label className="text-sm font-semibold text-foreground flex justify-between items-center">
                         <span>Terms and Conditions</span>
-                        <span className="text-[10px] text-primary bg-primary/5 px-2 py-1 rounded">Rich Text Editor</span>
+                        <span className="text-xs text-primary bg-primary/5 px-2 py-1 rounded">Rich Text Editor</span>
                     </label>
                     <RichTextEditor
                         value={settings.termsAndConditions}

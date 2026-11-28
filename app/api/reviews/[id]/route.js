@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { clearCache } from "@/lib/cache"
 
 export async function DELETE(request, context) {
     const admin = await getAdminAuth()
@@ -20,6 +21,7 @@ export async function DELETE(request, context) {
             return NextResponse.json({ error: "Review not found" }, { status: 404 })
         }
 
+        clearCache("reviews_")
         return NextResponse.json({ message: "Review deleted successfully" })
     } catch (error) {
         console.error("DELETE /api/reviews/[id] error:", error)

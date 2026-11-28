@@ -1,12 +1,14 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { NextResponse } from "next/server"
 import { getAdminAuth } from "@/lib/auth"
+import { getCached, setCached, clearCache } from "@/lib/cache"
 
 export async function GET() {
-    // const admin = await getAdminAuth()
-    // if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-
     try {
+        const cacheKey = "settings_general"
+        const cached = getCached(cacheKey)
+        if (cached) return NextResponse.json(cached)
+
         const { db } = await connectToDatabase()
 
         let settings = await db.collection("settings").findOne({ type: "general" })
@@ -24,7 +26,11 @@ export async function GET() {
                 dashboardDisplayMode: "logo_only",
                 storeEmail: "",
                 storePhone: "",
+                whatsappNumber: "",
                 storeAddress: "",
+                footerDescription: "Quality kids clothing crafted for comfort, style, and everyday joy.",
+                facebookUrl: "",
+                copyrightText: "",
                 currency: "BDT",
                 currencySymbol: "৳",
                 googleTagManagerId: "",
@@ -48,6 +54,7 @@ export async function GET() {
             if (!settings.storeLogo) settings.storeLogo = "/logo.svg"
         }
 
+        setCached(cacheKey, settings, 300)
         return NextResponse.json(settings)
     } catch (error) {
         console.error("GET /api/settings error:", error)
@@ -76,6 +83,8 @@ export async function PUT(request) {
             { upsert: true }
         )
 
+        clearCache("settings_general")
+        clearCache("admin_general_settings")
         return NextResponse.json({ success: true, result })
     } catch (error) {
         console.error("PUT /api/settings error:", error)
